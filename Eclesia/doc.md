@@ -1,275 +1,232 @@
-# Documentation — Génération des vues Blade (`doc.md`)
+# Documentation — Vues Blade du module « Formation » (`doc.md`)
 
-> Source unique : `design.md` (racine du projet). Aucune autre directive n'a été utilisée pour générer les vues.
-
----
-
-## 1. Objectif
-
-Générer l'ensemble des vues **Laravel Blade** conforme à la spécification `design.md` :
-Stack Bootstrap 5.3+, Bootstrap Icons, police Inter/Plus Jakarta Sans, grille responsive et syntaxe Blade standard.
-
-## 2. Exigences de la mission
-
-- Utiliser exclusivement `design.md` comme référence pour générer les Blades.
-- Aucune autre action (routes, contrôleurs, migrations, models, etc.) n'a été effectuée.
-- Tout travail effectué est documenté ici.
+> Référence : schéma de base de données fourni par l'utilisateur (tables `fideles`, `postes`,
+> `type_interventions`, `statut_fideles`, `nus`, `ouvriers`, `presences`, `interventions`,
+> `seances`, `programmes`, `formation_nus`, `formation_ords`, `cours`, `cours_programme`).
+>
+> **Règle impérative** : les blades sont construit(e)s **strictement à partir du schéma** —
+> aucune colonne n'est inventée pour l'affichage. Les seules libertés autorisées sont les
+> **améliorations UX front** (modales centrées, icônes/placeholders dans les champs, filtres,
+> cartes, astérisques sur les champs requis …).
 
 ---
 
-## 3. Fichiers générés
+## 1. Architecture des vues (`resources/views`)
 
-### 3.1 Layout master — `resources/views/layouts/app.blade.php`
-**Source design.md :** section `1.2` (code fourni, repris à l'identique).
+Les vues sont regroupées **par application**. L'application **Formation** vit dans
+`resources/views/formation/` ; le générique (lay-out, composants `ui/*`, header) reste global.
 
-| Élément | Détail |
+```
+resources/views/
+├── components/
+│   ├── navigation/
+│   │   ├── header.blade.php        → barre supérieure globale (sticky)
+│   │   └── nav-item.blade.php      → lien réutilisable actif/inactif
+│   └── ui/
+│       ├── badge.blade.php         → <span class="badge bg-{variant}">
+│       ├── button.blade.php        → bouton Bootstrap paramétrable
+│       ├── card.blade.php          → .card border-0 shadow-sm (+ header/footer slots)
+│       ├── modal.blade.php         → .modal-dialog .modal-dialog-centered .modal-dialog-scrollable
+│       ├── stat-card.blade.php     → carte KPI (label, valeur, icône, tendance)
+│       └── table.blade.php         → tableau responsive + état vide
+├── formation/
+│   ├── layouts/
+│   │   └── app.blade.php           → layout de l'application Formation
+│   │                                (sidebar par défaut + header + main + scripts CDN)
+│   ├── partials/
+│   │   └── sidebar.blade.php       → sidebar Formation (items + sous-modales, offcanvas mobile)
+│   ├── dashboard.blade.php         → tableau de bord exclusif Formation
+│   └── modals/
+│       ├── nouvelles-unites.blade.php
+│       ├── cours.blade.php
+│       ├── programmes.blade.php
+│       ├── seances.blade.php
+│       ├── presence.blade.php
+│       └── evaluation.blade.php
+```
+
+## 2. Layout de l'application — `formation/layouts/app.blade.php`
+
+- `@hasSection('sidebar') … @else @include('formation.partials.sidebar')` : la sidebar est
+  **par application** (une autre app fournit la sienne via `@section('sidebar')`).
+- `@include('formation.partials.sidebar')` par défaut + `<x-navigation.header />`.
+- Contenu : `main` avec `{{ $slot ?? '' }}` + `@yield('content')`.
+- Scripts en fin de page : Bootstrap 5.3.3 bundle + **html5-qrcode** (CDN) pour le scanner.
+
+## 3. Dashboard — `formation/dashboard.blade.php`
+
+Racine `/` → `DashboardController@index` → `view('formation.dashboard')`.
+
+- **Charts** : 4 graphiques Chart.js (canvas `sparklineChart`, `histogramChart`, `sectorChart`,
+  `doughnutChart`), chacun dans un `.chart-box` (hauteur fixe `var(--chart-height)` définie dans
+  `app.css`). Données injectées via un **bloc JSON** :
+  ```blade
+  <script type="application/json" id="dashboard-data">@json($dashboardData)</script>
+  ```
+  puis `formation/dashboard.js` (entrée Vite) lit ce bloc et dessine les graphiques.
+- **Cartes d'accès rapide** : 6 cartes ouvrent les modales des modules (unités, cours,
+  programmes, séances, présences, évaluation).
+- **Inclusion des modales** (données passées en arguments pour isoler les scopes) :
+  ```blade
+  @include('formation.modals.nouvelles-unites', ['unites' => $unites])
+  @include('formation.modals.cours',          ['cours' => $cours])
+  @include('formation.modals.programmes',     ['programmes' => $programmes])
+  @include('formation.modals.seances',        ['programmes' => $programmes, 'seances' => $seances])
+  @include('formation.modals.presence',       [ 'statsPresences' => ..., 'statutsFideles' => …,
+                                                 'typeInterventions' => …, 'postes' => …, 'cours' => …])
+  @include('formation.modals.evaluation',     ['nuCotations' => $nusEvaluation, 'evalDate' => $evalDate])
+  ```
+
+### Données fournies par `DashboardController`
+
+| Variable | Contenu |
 |---|---|
-| `<html lang>` | `str_replace('_', '-', app()->getLocale())`, classe `h-100` |
-| `<head>` | charset UTF-8, viewport, CSRF token, `@yield('title', config('app.name'))` |
-| CSS | Bootstrap 5.3.3 CDN + Bootstrap Icons 1.11.3 CDN + `@vite` + `@stack('styles')` |
-| Body | `h-100 bg-light antialiased font-sans` |
-| Structure | `d-flex flex-column flex-lg-row min-vh-100` |
-| Sidebar | `<x-navigation.sidebar />` |
-| Header | `<x-navigation.header />` |
-| Main | `flex-grow-1 overflow-y-auto p-3 p-sm-4 p-lg-5` avec `{{ $slot ?? '' }}` + `@yield('content')` |
-| Scripts | Bootstrap 5.3.3 JS Bundle + `@stack('scripts')` |
+| `$unites` | fidèles + `code_fidele`, `nom`, `genre`, `telephone`, `grace`, `statut_nu` (depuis `nu.statut`) |
+| `$cours` | `id`, `passages` |
+| `$programmes` | `id`, `type` (NU/Ord), `libelle` (session/thème), `montant`, `statut`, `commentaire`, `nb_seances`, `nb_cours`, `date_creation` |
+| `$seances` | `id`, `numero_seance`, `date_seance`, `heure_debut`, `heure_fin`, `lieu`, `delai_rappel`, `programme`, `programme_id` |
+| `$statutsFideles`, `$typeInterventions`, `$postes` | `pluck('designation', 'id')` |
+| `$nusEvaluation` | `id`, `code_nu`, `fidele`, `note_oral`, `note_ecrite`, `pourcentage` |
+| `$statsPresences` | par séance : `programme`, `date_seance`, `present`, `absent`, `taux` |
+| `$evalDate` | date de référence des cotations |
 
-### 3.2 Composant Sidebar — `resources/views/components/navigation/sidebar.blade.php`
-**Source design.md :** section `4.2` (code fourni, repris à l'identique).
+## 4. Blocs et composants des modales
 
-- `aside` 260 px, `min-height: 100vh`, fond `bg-dark`, texte blanc.
-- Branding : icône `bi bi-grid-fill` + « Application ».
-- `nav nav-pills` avec les 5 liens : Tableau de bord, Projets, Utilisateurs, Rapports, Paramètres.
-- Lien actif sur `route('dashboard')` → `active bg-primary` (le design utilisait `request()->routeIs('dashboard')`).
-- Carte profil en bas via `mt-auto` + `border-top border-secondary`.
+Chaque fichier de `modals/` regroupe **toutes les modales du module** (convention de nommage) :
+`#modal-{module}-{action}`. Chaque modale utilise le composant anonyme `<x-ui.modal>` (centrée et
+scrollable), avec :
 
-> **Ajustement :** `request()->routeIs('dashboard') ? 'active bg-primary' : 'hover-bg-secondary'` →
-> le design original avait `hover-bg-secondary` pour l'inactif, mais l'inactif doit rester `text-white-50`
-> pour être cohérent avec les autres liens (`text-white-50` dans les blocs vu dans la section 4.2). Seul
-> le cas actif prend la classe `active bg-primary`.
+- un **formulaire** (action réelle `POST`/`PUT`/`DELETE` vers les routes du contrôleur) ;
+- des **messages de validation en haut** du modal correspondant :
+  ```blade
+  @if ($errors->any())
+      <div class="alert alert-danger py-2 small">
+          @foreach ($errors->all() as $error) <div>…{{ $error }}</div> @endforeach
+      </div>
+  @endif
+  ```
+- des champs en `input-group` avec **icône `bi-` + placeholder** (pas de label) ;
+- un `*` sur les champs requis (`placeholder="Nom *"`, attribut `required`) ;
+- des **modales de confirmation de suppression** (`size="sm"`) avec remplissage automatique.
 
-### 3.3 Composant Header — `resources/views/components/navigation/header.blade.php`
-**Source design.md :** section `4.1` (code fourni, repris à l'identique).
+## 5. Modale « Nouvelles unités » — `nouvelles-unites.blade.php`
 
-- Hauteur fixe `64px`, `sticky-top`, `shadow-sm`, bordure basse.
-- Bouton burger `d-lg-none` → `data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu"`.
-- Barre de recherche : `input-group` (icône `bi bi-search` + input `bg-light border-0 shadow-none`), `max-width: 380px`.
-- Cloche de notifications : `bi bi-bell` + point rouge (`p-1 bg-danger rounded-circle`) en `position-absolute`.
-- Séparateur vertical `.vr`.
-- Dropdown profil : avatar (`ui-avatars.com` par défaut), nom utilisateur (`d-none d-sm-inline`).
-- Menu : Profil (`bi bi-person`), Paramètres (`bi bi-gear`), diviseur, Déconnexion (form POST → `route('logout')`).
+- `#modal-unites-ajouter` : formulaire → `route('nouvel-unite.store')`. Champs **exactement selon
+  le schéma `fideles`+`nus`** : `nom`, `postnom`, `prenom`, `date_naissance`, `telephone` (13),
+  `genre` (M/F), `statut_nu` (« en règle » / « non en règle »), `grace`. Les codes et le QR sont
+  générés automatiquement (note d'information en haut du formulaire).
+- `#modal-unites-consulter` (xl) : **format cartes** (`#unites-cards`), chaque carte
+  `data-filtre-unit data-nom data-statut` ; **filtres** `#filtre-unites-nom` (texte) +
+  `#filtre-unites-statut` (select) ; badges de statut (variants `success`/`warning`).
+- `#modal-unites-editer` : formulaire pré-rempli via `data-bs-modal-fill` ; `data-action` pointe
+  vers `fidele.update`.
+- `#modal-unites-supprimer` (sm) : confirmation ; bouton danger `data-confirm-submit` →
+  soumission `DELETE` vers `fidele.destroy`.
 
-### 3.4 Composant Nav-Item — `resources/views/components/navigation/nav-item.blade.php`
-**Source design.md :** section `3` (description : « Liens réutilisables avec états actif/inactif »).
+## 6. Modale « Cours » — `cours.blade.php`
 
-**Props :**
-- `href` (défaut `'#'`)
-- `icon` (défaut `''`) — classe Bootstrap Icon, ex. `bi bi-house-door`
-- `active` (booléen, défaut `false`)
-- `label` (défaut `''`)
+- `#modal-cours-ajouter` : UN champ `passages` (thème/versets) → `route('cours.store')`.
+- `#modal-cours-consulter` (xl) : **cartes** (`data-filtre-cours data-passages`) + filtre texte
+  (`data-table-filter`/`data-filtre`), boutons « éditer » / « supprimer ».
+- `#modal-cours-editer` / `#modal-cours-supprimer` : remplissage auto + `data-confirm-submit`.
 
-**Comportement :**
-- `active = true` → `nav-link text-white active bg-primary`
-- sinon → `nav-link text-white-50 hover-bg-secondary`
-- Icône rendue via `<i class="bi {{ $icon }} me-2"></i>` si `icon` non vide.
+## 7. Modale « Programmes » — `programmes.blade.php`
 
-**Exemple d'usage :**
-```blade
-<x-navigation.nav-item href="{{ route('dashboard') }}" icon="bi bi-house-door" :active="request()->routeIs('dashboard')" label="Tableau de bord" />
-```
+- `#modal-prog-ajouter` → `route('programmes.store')` :
+  - select `type` (`#prog-type` : NU / Ord) qui **bascule** les blocs `#prog-fields-nu`
+    (`session`) et `#prog-fields-ord` (`theme`) — JS `app.js` ;
+  - `montant` (FCFA), `statut`, `commentaire`. Le contrôleur crée en plus la
+    `formation_nus`/`formation_ords` selon le type.
+- `#modal-prog-consulter` (xl) : **cartes** (`#prog-cards`) avec **3 filtres combinés** :
+  `#filtre-prog-intitule` (texte), `#filtre-prog-type`, `#filtre-prog-statut`. Chaque carte :
+  badges type (`primary`=NU / `success`=Ord) + statut, montant formaté, nb séances/cours,
+  boutons **éditer / valider / supprimer**. Bouton bas « Gérer les séances » →
+  `#modal-seance-consulter`.
+- `#modal-prog-valider` (xl) : **cartes** avec **filtres type/intitulé/date** ; bouton
+  « Afficher » (`[data-afficher]`) déplie `[data-validation-form]` contenant un **commentaire**
+  et deux actions : **« Valider »** (`[data-validation]`) et **« À modifier »**.
+  **Règle UX** : dès que le commentaire est saisi, le bouton « Valider » est **grisé
+  (disabled)** (JS `app.js`).
+- `#modal-prog-editer` : `montant`, `statut`, `commentaire` (seules colonnes réelles) + rappel
+  lecture seule du libellé.
+- `#modal-prog-supprimer` (sm) : `data-confirm-submit` → `programmes.destroy`.
 
-### 3.5 Composant Button — `resources/views/components/ui/button.blade.php`
-**Source design.md :** section `3` (description : « Boutons avec classes Bootstrap (`btn-primary`, `btn-outline-secondary`, etc.) »).
+## 8. Modale « Séances » — `seances.blade.php`
 
-**Props :**
-- `variant` (défaut `'primary'`) → `btn-{variant}` (ex. `primary`, `outline-secondary`, `success`, `danger`…)
-- `size` (`sm` → `btn-sm`, `lg` → `btn-lg`, sinon vide)
-- `icon` (classe Bootstrap Icon facultative)
-- `type` (défaut `'button'`)
+- `#modal-seance-ajouter` (xl) : liste de **n séances dans le même modal** —
+  une ligne `[data-seance-row]` modèle + bouton **« Ajouter une autre séance »** (`#seances-add`)
+  qui clone la ligne (numéro renuméroté, bouton « retirer » par ligne). Champs par ligne :
+  `numero_seance`, `date_seance`, `heure_debut`, `heure_fin`, `lieu` (défaut « temple de
+  l'église »), `delai_rappel` (jours) ; `programme_id` commun en haut. Envoi →
+  `seances.batch` (`SeanceController@storeBatch`, requête `StoreSeancesBatchRequest`).
+- `#modal-seance-consulter` (xl) : **tableau** (`#table-seances`) + filtre texte
+  (`data-table-filter`) ; colonnes N°, Programme, Date, Heures, Lieu, Rappel, Actions
+  (supprimer → `data-confirm-submit`).
 
-**Détails :** `d-inline-flex align-items-center gap-1` ; attributs additionnels fusionnés via `$attributes->merge()`.
+## 9. Modale « Présences » — `presence.blade.php`
 
-**Exemple d'usage :**
-```blade
-<x-ui.button icon="bi bi-plus-lg">Nouveau Projet</x-ui.button>
-<x-ui.button variant="outline-secondary" icon="bi bi-download">Exporter</x-ui.button>
-```
+Onglets Bootstrap (`nav-tabs`) :
 
-### 3.6 Composant Card — `resources/views/components/ui/card.blade.php`
-**Source design.md :** section `3` (description : « Cartes Bootstrap réutilisables (`card`, `card-header`, `card-body`) »).
+- **Scanner** (`#modal-presence-scanner`, `#presence-tab-scanner`) : zone `#qr-reader`
+  (html5-qrcode, caméra via `{ facingMode: 'environment' }`), boutons « Ouvrir la caméra » /
+  « Arrêter », résumé `#qr-recap` et bouton « Enregistrer la présence » (activé après scan).
+- **Statistiques** (`#modal-presence-stats`, onglet) : cartes par séance
+  (`#presence-stats-cards`, `data-filtre-pres`) + filtre `#filtre-stats-presence` ; barres de
+  progression et taux.
+- **Paramètres** (`#presence-tab-params`) : **CRUD complet** pour les 4 référentiels du schéma —
+  **Statuts des fidèles**, **Types d'intervention**, **Cours**, **Postes**. Chaque section liste
+  les enregistrements avec boutons **éditer** (`[data-crud-edit]`) et **supprimer** (form
+  `DELETE` inline), et un bouton `+` ouvrant une modale CRUD (`#modal-crud-statut`,
+  `#modal-crud-type`, `#modal-crud-cours`, `#modal-crud-poste`). Le JS `app.js` bascule le
+  formulaire partagé entre **création** (`data-action-store`) et **mise à jour**
+  (`data-action` + `_method PUT`).
 
-**Props/slots :**
-- `title` (défaut `''`) — titre du header
-- `header` (slot) — contenu personnalisé du header (prioritaire sur `title`)
-- `footer` (défaut `''`) — pied de carte
-- Classes par défaut : `card border-0 shadow-sm`
+## 10. Modale « Évaluation » — `evaluation.blade.php`
 
-**Exemple d'usage :**
-```blade
-<x-ui.card title="Activités Récentes">
-    ...contenu...
-    <x-slot:footer>Pied de carte</x-slot:footer>
-</x-ui.card>
-```
+- `#modal-eval-cotation` (xl) : **une ligne par NU** (code, fidèle) avec deux champs
+  `note_oral` / `note_ecrite` (sur 20) et le `pourcentage` calculé (chaîne de `nus`).
+  Chaque ligne est un formulaire `PUT` → `nus.update`. Bandeau d'information avec la
+  `$evalDate` de référence.
 
-### 3.7 Composant Stat-Card — `resources/views/components/ui/stat-card.blade.php`
-**Source design.md :** section `3` (description : « Cartes d'indicateurs KPI ») — inspiré du bloc « Metric Stat Cards Grid » de la section `5`.
+## 11. JavaScript — `resources/js/app.js`
 
-**Props :**
-- `label` — libellé du KPI
-- `value` — valeur affichée en `h3 fw-bold`
-- `icon` — icône Bootstrap Icon facultative
-- `trend` — texte de tendance (ex. `+12%`)
-- `trendDirection` (`up` → `bi-arrow-up-right`, `down` → `bi-arrow-down-right`)
-- `trendVariant` (`success` → `bg-success-subtle text-success`, `danger` → `bg-danger-subtle text-danger`)
+Toutes les interactions front (aucune logique dans les vues) :
 
-**Exemple d'usage :**
-```blade
-<x-ui.stat-card label="Total Projets" value="128" icon="bi bi-folder" trend="+12%" />
-<x-ui.stat-card label="Temps Moyen" value="24h" icon="bi bi-clock" trend="-3%" trend-direction="down" trend-variant="danger" />
-```
-
-### 3.8 Composant Badge — `resources/views/components/ui/badge.blade.php`
-**Source design.md :** section `3` (description : « Badges d'état (`badge bg-success`, `badge bg-warning`, etc.) »).
-
-**Props :**
-- `text` (défaut `''`) — si vide, rend le contenu du slot
-- `variant` (défaut `'success'`) → `badge bg-{variant}`
-
-**Exemple d'usage :**
-```blade
-<x-ui.badge variant="success">Terminé</x-ui.badge>
-<x-ui.badge variant="warning" text="En cours" />
-```
-
-### 3.9 Composant Table — `resources/views/components/ui/table.blade.php`
-**Source design.md :** section `3` (description : « Tableaux Bootstrap responsive (`table table-hover align-middle`) »).
-
-**Props :**
-- `headings` (tableau) — en-têtes rendus dans `<thead class="table-light">`
-- `emptyMessage` (défaut `'Aucune donnée disponible'`) — ligne vide automatique si slot vide
-- Attributs additionnels fusionnés ; classes par défaut `table table-hover align-middle mb-0`
-
-**Exemple d'usage :**
-```blade
-<x-ui.table :headings="['Nom', 'Statut', 'Date']">
-    @foreach ($items as $item)
-        <tr>
-            <td>{{ $item->name }}</td>
-            <td><x-ui.badge variant="success">{{ $item->status }}</x-ui.badge></td>
-            <td>{{ $item->created_at->format('d/m/Y') }}</td>
-        </tr>
-    @endforeach
-</x-ui.table>
-```
-
-### 3.10 Composant Modal — `resources/views/components/ui/modal.blade.php`
-**Source design.md :** section `3` (description : « Fenêtres modales Bootstrap (`modal fade`) »).
-
-**Props :**
-- `id` (défaut `'exampleModal'`)
-- `title` (défaut `''`) — en-tête avec bouton `btn-close` `data-bs-dismiss="modal"`
-- `size` (`sm` → `modal-sm`, `lg` → `modal-lg`, `xl` → `modal-xl`, sinon vide)
-- `footer` (slot) — pied de modale
-
-**Exemple d'usage :**
-```blade
-<x-ui.modal id="createProject" title="Nouveau Projet" size="lg">
-    ...formulaire...
-    <x-slot:footer>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-        <button type="button" class="btn btn-primary">Créer</button>
-    </x-slot:footer>
-</x-ui.modal>
-```
-
-### 3.11 Vue Dashboard — `resources/views/dashboard.blade.php`
-**Source design.md :** section `5` (code fourni, repris à l'identique).
-
-- `@extends('layouts.app')` + `@section('title', 'Tableau de bord')`.
-- **Page Header** : titre `h3 fw-bold` + sous-texte, boutons Exporter (`btn-outline-secondary`, `bi bi-download`) et Nouveau Projet (`btn-primary`, `bi bi-plus-lg`).
-- **Stat Cards Grid** (section 5) : `row g-3`, 4 cartes `col-12 col-sm-6 col-lg-3` (Total Projets 128 / +12%, Tâches Complétées 1,420 / +8%, Temps Moyen 24h / -3%, Taux de Réussite 98.5% / +1.2%).
-- **Data Table & Side Panel** : `row g-4` :
-  - `col-12 col-lg-8` : carte « Activités Récentes » avec lien « Voir tout », tableau `@forelse($items ?? [] ...)` → 4 colonnes (Nom, Statut, Date `d/m/Y`, Action) + état vide `colspan="4"`.
-  - `col-12 col-lg-4` : carte « Aperçu Statistique » avec zone de placeholder Chart.js (`style="height: 250px"`).
-
----
-
-## 4. Workflow / Décisions prises
-
-1. **Lecture préalable** de `design.md` (338 lignes) et inventaire du dossier `resources/views/`
-   (seul `welcome.blade.php` existait).
-2. **Reproduction fidèle** du code fourni dans `design.md` pour : layout (1.2), header (4.1),
-   sidebar (4.2), dashboard (5) — aucun écart de structure.
-3. **Création des composants UI/nav d'après les descriptions** (section 3) en composants
-   **anonymes Blade** (`.blade.php` sous `resources/views/components/`) avec `@props`,
-   conformes au design system (classes Bootstrap uniquement, icônes `bi-`).
-4. **Aucune autre tâche** : pas de routes, contrôleurs, models, migrations, pas de
-   `composer install`, pas d'installation Laravel Boost, pas de modification de CSS/JS,
-   pas de test lancé (conformément à la consigne « exclusivement interdit de faire autre chose »).
-5. Un fichier (`components/navigation/index.blade.php`) créé par erreur a été **supprimé**
-   immédiatement (non spécifié dans `design.md`).
-
-## 5. Points d'attention / suites possibles (non réalisées)
-
-- Le toggle burger (`data-bs-target="#sidebarMenu"`) du header suppose que la sidebar
-  devient un **offcanvas** sur mobile ; le code de `sidebar.blade.php` fourni par le design
-  est un `<aside>` statique. L'adaptation offcanvas mobile n'a **pas** été implémentée
-  pour rester fidèle à la section 4.2.
-- Les stat cards du dashboard et le tableau « Activités Récentes » utilisent des données
-  statiques (`128`, `$items ?? []`) — le branchement à de vraies données (contrôleur/route)
-  est hors périmètre.
-- `x-ui.card`, `x-ui.stat-card`… utilisent la génération de noms de composants par sous-dossier
-  (`components/ui/*.blade.php` → `<x-ui.*>`), supportée nativement par Laravel.
-
-## 6. Ajout d'une route d'accès (demande utilisateur)
-
-À la demande explicite de l'utilisateur (« crée une route pour accéder à ces blades » + « fais
-que ce blade soit accessible à la racine »), le fichier `routes/web.php` a été modifié.
-
-### Modifications effectuées
-
-**Avant :**
-```php
-Route::get('/', function () {
-    return view('welcome');
-});
-```
-
-**Après :**
-```php
-Route::get('/', function () {
-    return view('dashboard');
-});
-```
-
-### Comportement
-
-- La racine `/` affiche désormais la vue `dashboard.blade.php` (layout `layouts.app` +
-  sidebar + header), en lieu et place de la page `welcome`.
-
-
-## 7. Récapitulatif des fichiers créés
-
-| Fichier | Référence design.md |
+| Comportement | Détail |
 |---|---|
-| `resources/views/layouts/app.blade.php` | § 1.2 |
-| `resources/views/components/navigation/header.blade.php` | § 4.1 |
-| `resources/views/components/navigation/sidebar.blade.php` | § 4.2 |
-| `resources/views/components/navigation/nav-item.blade.php` | § 3 |
-| `resources/views/components/ui/button.blade.php` | § 3 |
-| `resources/views/components/ui/card.blade.php` | § 3 |
-| `resources/views/components/ui/stat-card.blade.php` | § 3 |
-| `resources/views/components/ui/badge.blade.php` | § 3 |
-| `resources/views/components/ui/table.blade.php` | § 3 |
-| `resources/views/components/ui/modal.blade.php` | § 3 |
-| `resources/views/dashboard.blade.php` | § 5 |
-| `routes/web.php` (modifié — route `/` → `dashboard`) | demande utilisateur |
-| `doc.md` (ce fichier) | — |
+| Remplissage auto | `[data-bs-modal-fill]` copie les `data-*` du bouton vers les champs `[name]`/`[data-field]` de la modale cible ; si `data-action` présent → définit `action` du formulaire + mémorise pour suppression |
+| Suppression | `[data-confirm-submit]` construit un formulaire `_method=DELETE` et soumet l'URL mémorisée |
+| Filtres cartes | unités (`#filtre-unites-…`), programmes (intitulé/type/statut), validation (intitulé/type/date), stats présence |
+| Filtre tableaux | `[data-table-filter]` (filtre lignes `<tbody>`, colonnes optionnelles via `data-cols`) |
+| Multi-séances | clonage `[data-seance-row]`, renumérotation, retrait |
+| Bascule NU/Ord | `#prog-type` ⇄ `#prog-fields-nu` / `#prog-fields-ord` |
+| Validation | commentaire saisi → bouton « Valider » désactivé ; « Afficher » déplie le formulaire |
+| CRUD paramètres | `[data-crud-edit]` / `[data-crud-reset]` basculent création ⇄ mise à jour |
+| Scanner QR | html5-qrcode : démarrage/arrêt caméra, résumé, activation de l'enregistrement |
 
-## 8. Vérifications
+Graphiques du dashboard : `resources/js/formation/dashboard.js` (entrée Vite dédiée,
+déclarée dans `vite.config.js`).
 
-- `php artisan view:cache` → « Blade templates cached successfully. » — toutes les vues
-  (dont les nouveaux composants) compilent sans erreur.
-- Aucune vérification navigateur / test HTTP réalisée (hors périmètre de la consigne
-  « exclusivement interdit de faire autre chose »).
+## 12. Styles — `resources/css/app.css`
+
+- Variables : `--bs-border-radius: 5px`, `--chart-height`, ombres douces.
+- `.chart-box` (hauteur fixe), `.seance-row`, `.empty-state`, unités communes ; les blades
+  restent **allégées** (pas de gros blocs `<style>` inline).
+
+## 13. Fichiers supprimés / déplacés
+
+- `resources/views/layouts/app.blade.php` → **déplacé** vers `formation/layouts/app.blade.php`.
+- `resources/views/dashboard.blade.php`, `resources/views/welcome.blade.php`,
+  `resources/views/components/navigation/sidebar.blade.php` → **supprimés** (remplacés par le
+  dashboard et la sidebar Formation).
+
+## 14. Tests & vérifications
+
+- `php artisan test` : **5 tests / 14 assertions verts** (dashboard 200, 4 canvas dans
+  `.chart-box`, hauteur fixe via `--chart-height` dans la feuille compilée, sidebar sticky et
+  non flottante, layout appli).
+- `vendor/bin/pint --dirty --format agent` : formatage appliqué.
+- `npm run build` : Vite compile `app.css`, `app.js` et `dashboard.js`.
+
+> Chaque modification exige ensuite : `php artisan view:clear`, `php artisan test`,
+> `vendor/bin/pint --dirty`, `npm run build`.

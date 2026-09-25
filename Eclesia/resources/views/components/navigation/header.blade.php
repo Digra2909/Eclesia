@@ -1,4 +1,4 @@
-<header class="navbar navbar-expand bg-white border-bottom sticky-top px-3 px-sm-4 shadow-sm" style="height: 64px;">
+<header class="navbar navbar-expand bg-white border-bottom sticky-top px-3 px-sm-4 shadow-sm" style="height: 64px;z-index:50">
     <div class="container-fluid p-0 d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-3">
             <button class="btn btn-link text-dark p-0 d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
@@ -26,12 +26,14 @@
                     <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i> Profil</a></li>
                     <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i> Paramètres</a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right me-2"></i> Déconnexion</button>
-                        </form>
-                    </li>
+                    @if(Route::has('logout'))
+                        <li>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right me-2"></i> Déconnexion</button>
+                            </form>
+                        </li>
+                    @endif
                 </ul>
             </div>
         </div>

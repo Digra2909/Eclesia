@@ -7,7 +7,7 @@
     @if ($title || isset($header))
         <div class="card-header bg-white">
             @isset($header)
-                {{ $header }}
+                {!! $header !!}
             @else
                 <h5 class="fw-semibold mb-0">{{ $title }}</h5>
             @endisset
@@ -20,7 +20,7 @@
 
     @if ($footer)
         <div class="card-footer bg-white">
-            {{ $footer }}
+            {!! $footer !!}
         </div>
     @endif
 </div>

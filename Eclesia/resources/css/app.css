@@ -7,3 +7,172 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* === Style global de l'application ===
+   Arrondis 5px + ombres discrètes sur conteneurs, modales et cartes. */
+:root {
+    --bs-border-radius: 5px;
+    --bs-border-radius-sm: 4px;
+    --bs-border-radius-lg: 5px;
+    --bs-border-radius-xl: 6px;
+    --bs-modal-border-radius: 5px;
+    --bs-card-border-radius: 5px;
+    --chart-height: 300px;
+}
+
+/* Conteneur des graphiques Chart.js : hauteur fixe pour éviter l'étirement
+   infini avec responsive:true */
+.chart-box {
+    position: relative;
+    width: 100%;
+    height: var(--chart-height);
+}
+
+/* Cartes KPI : animation au survol + rappel qu'elles sont cliquables */
+.kpi-card {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.kpi-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 0.9rem 1.8rem rgba(30, 41, 59, 0.16);
+}
+
+/* Cartes des modales « Consulter » : encadrement visible + ombre marquée
+   (le style global des cartes Border removed les contours) */
+.modal .card-consulter {
+    border: 1px solid #e3e6ef;
+    box-shadow: 0 0.4rem 1.4rem rgba(30, 41, 59, 0.14);
+}
+
+.card,
+.modal-content {
+    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.08);
+    border: 0;
+}
+
+.modal-content {
+    border-radius: 5px;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.18);
+}
+
+/* Champs de formulaire : icône en prépend, sans bordure brute */
+.input-group-text {
+    background-color: #f1f3f5;
+    border: 1px solid #dee2e6;
+}
+
+.form-control,
+.form-select {
+    border-radius: 5px;
+}
+
+/* Fine ligne d'aide sous les champs obligatoires */
+.field-hint {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+/* État vide des listes consulter */
+.empty-state {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: #6c757d;
+}
+.empty-state i {
+    font-size: 2rem;
+    color: #adb5bd;
+}
+
+/* === Retouche des modales : en-têtes, cartes internes et champs === */
+.modal-content {
+    overflow: hidden;
+    border-top: 4px solid #2b9cfe;
+}
+.modal-header {
+    background: linear-gradient(90deg, #f7f9fc, #fff);
+    border-bottom: 1px solid #eef1f6;
+    padding: 1rem 1.25rem;
+}
+.modal-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+}
+.modal-title .modal-title-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 0.5rem;
+    background: linear-gradient(135deg, #3b7dcd, #2b9cfe);
+    color: #fff;
+    font-size: 1rem;
+    flex: 0 0 34px;
+}
+.modal-footer {
+    background: #f7f9fc;
+    border-top: 1px solid #eef1f6;
+    padding: 0.75rem 1.25rem;
+}
+.modal .form-control,
+.modal .form-select {
+    background-color: #fff;
+}
+.modal .alert {
+    border-left: 3px solid transparent;
+}
+.modal .alert-info {
+    background: #eaf6ff;
+    border-color: #b8ddff;
+}
+
+/* Cartes internes des modales : coins adoucis + hover léger */
+.modal .card {
+    border-radius: 0.6rem;
+}
+.modal .card-consulter:hover {
+    box-shadow: 0 0.6rem 1.8rem rgba(30, 41, 59, 0.18);
+    transform: translateY(-2px);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Focus visibles et doux sur les champs */
+.form-control:focus,
+.form-select:focus {
+    border-color: #2b9cfe;
+    box-shadow: 0 0 0 0.2rem rgba(43, 156, 254, 0.14);
+}
+
+/* Boutons primaires : dégradé + ombre colorée (cohérent avec la sidebar) */
+.btn-primary {
+    border: 0;
+    background: linear-gradient(135deg, #3b7dcd, #2b9cfe);
+    box-shadow: 0 0.35rem 0.9rem rgba(43, 156, 254, 0.32);
+}
+.btn-primary:hover {
+    background: linear-gradient(135deg, #356bb4, #2b8de0);
+    box-shadow: 0 0.45rem 1.1rem rgba(43, 156, 254, 0.42);
+}
+
+/* Bouton duplicata: pas de dégradé, juste un effet boîte */
+.btn-outline-primary {
+    box-shadow: none;
+}
+
+/* Pulsation douce du bouton d'action principal de l'en-tête du tableau de bord */
+@keyframes header-pulse {
+    0%, 100% { box-shadow: 0 0.35rem 0.9rem rgba(43, 156, 254, 0.32); }
+    50% { box-shadow: 0 0.35rem 1.4rem rgba(43, 156, 254, 0.6); }
+}
+.btn-header-pulse {
+    animation: header-pulse 2.4s ease-in-out infinite;
+}
+
+/* Petites listes de cartes des modales (séances associées, etc.) */
+.list-group-item {
+    background: transparent;
+    border-color: #f0f2f7;
+}

@@ -6,6 +6,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', config('app.name'))</title>
 
+    <!-- Favicon (logo déposé dans public/) -->
+    <link rel="icon" type="image/png" href="{{ asset('image.png') }}">
+
     <!-- Bootstrap 5 CSS & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -16,8 +19,14 @@
 </head>
 <body class="h-100 bg-light antialiased font-sans">
     <div class="d-flex flex-column flex-lg-row min-vh-100">
-        <!-- Sidebar Layout Component -->
-        <x-navigation.sidebar />
+        <!-- Sidebar propre à l'application (défaut : Formation). Une autre application
+             peut fournir la sienne en définissant une section @section('sidebar') -->
+        
+        @hasSection('sidebar')
+            @yield('sidebar')
+        @else
+            @include('formation.partials.sidebar')
+        @endif
 
         <!-- Main Content Area -->
         <div class="flex-grow-1 d-flex flex-column min-width-0 overflow-hidden">
@@ -34,6 +43,8 @@
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Lecteur de QR code (modale présence) -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     @stack('scripts')
 </body>
 </html>
