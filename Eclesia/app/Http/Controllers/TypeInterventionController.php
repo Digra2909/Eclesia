@@ -29,6 +29,7 @@ class TypeInterventionController extends Controller
      */
     public function store(StoreTypeInterventionRequest $request)
     {
+
         $typeIntervention = TypeIntervention::create($request->validated());
 
         if ($request->wantsJson()) {

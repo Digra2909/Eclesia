@@ -9,14 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['code_fidele', 'nom', 'postnom', 'prenom', 'date_naissance', 'telephone', 'adresse', 'grace', 'genre', 'path_qr_code', 'statut_id'])]
+#[Fillable(['code_fidele', 'nom', 'postnom', 'prenom', 'date_naissance', 'telephone', 'adresse', 'grace', 'genre', 'statut_id'])]
 #[Hidden(['id'])]
 class Fidele extends Model
 {
     protected $casts = [
         'date_naissance' => 'date',
         'genre' => 'string',
-        'path_qr_code' => 'string',
     ];
 
     public function statut(): BelongsTo

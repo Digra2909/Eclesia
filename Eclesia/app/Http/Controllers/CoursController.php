@@ -9,11 +9,11 @@ use App\Models\Cours;
 class CoursController extends Controller
 {
     /**
-     * Liste des enregistrements (JSON si appel AJAX).
+     * Page de gestion des cours (formulaire + liste).
      */
     public function index()
     {
-        return response()->json(Cours::latest()->get());
+        return view('formation.pages.cours.index');
     }
 
     /**

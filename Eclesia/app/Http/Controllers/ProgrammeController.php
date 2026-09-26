@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreProgrammeCoursRequest;
 use App\Http\Requests\StoreProgrammeRequest;
 use App\Http\Requests\UpdateProgrammeRequest;
-use App\Models\Cours;
 use App\Models\FormationNu;
 use App\Models\FormationOrd;
 use App\Models\Programme;
@@ -13,11 +11,11 @@ use App\Models\Programme;
 class ProgrammeController extends Controller
 {
     /**
-     * Liste des enregistrements (JSON si appel AJAX).
+     * Page de gestion des programmes (création + liste).
      */
     public function index()
     {
-        return response()->json(Programme::latest()->get());
+        return view('formation.pages.programmes.index');
     }
 
     /**
@@ -61,37 +59,7 @@ class ProgrammeController extends Controller
     }
 
     /**
-     * Associe des cours à un programme (et en crée éventuellement un nouveau),
-     * puis bascule vers l'ajout des séances.
-     */
-    public function storeCours(StoreProgrammeCoursRequest $request, Programme $programme)
-    {
-        $coursIds = $request->validated('cours_ids', []);
-        $nouveauCours = null;
-
-        if ($request->filled('nouveau_passages')) {
-            $nouveauCours = Cours::create(['passages' => $request->validated('nouveau_passages')]);
-            $programme->cours()->attach($nouveauCours->id);
-        }
-
-        if (! empty($coursIds)) {
-            $programme->cours()->sync(array_unique($coursIds));
-        }
-
-        if ($request->wantsJson()) {
-            return response()->json([
-                'message' => 'Cours associé au programme.',
-                'cours' => $nouveauCours ? ['id' => $nouveauCours->id, 'passages' => $nouveauCours->passages] : null,
-            ]);
-        }
-
-        return redirect()->route('dashboard')
-            ->with('success', 'Cours associés au programme. Ajoutez maintenant les séances.')
-            ->with('seances_pour_programme', $programme->id);
-    }
-
-    /**
-     * Détail d'une ressource.
+     * Page de détail d'un programme (cours, statut et séances).
      */
     public function show(Programme $programme)
     {
@@ -99,7 +67,7 @@ class ProgrammeController extends Controller
             return response()->json($programme);
         }
 
-        return redirect()->route('dashboard');
+        return view('formation.pages.programmes.show', compact('programme'));
     }
 
     /**

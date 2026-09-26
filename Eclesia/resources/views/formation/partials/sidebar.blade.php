@@ -33,13 +33,11 @@
                 <i class="bi bi-chevron-right ms-auto small"></i>
             </a>
             <ul class="app-submenu">
-                <li><button type="button" class="app-submenu-link" data-bs-toggle="modal" data-bs-target="#modal-unites-ajouter"><i class="bi bi-plus-lg me-2"></i>Enregistrer</button></li>
-                <li><button type="button" class="app-submenu-link" data-bs-toggle="modal" data-bs-target="#modal-unites-consulter"><i class="bi bi-eye me-2"></i>Consulter</button></li>
+                <li><a href="{{ route('unites.index') }}" class="app-submenu-link"><i class="bi bi-person-plus me-2"></i>Nouvelles unités</a></li>
             </ul>
         </li>
 
-
-        <!-- Programmes (avec sous-menu Séances et Validation) -->
+        <!-- Programmes -->
         <li class="nav-submenu">
             <a href="#" class="nav-link d-flex align-items-center text-white-50">
                 <i class="bi bi-calendar2-range me-2"></i>
@@ -47,8 +45,7 @@
                 <i class="bi bi-chevron-right ms-auto small"></i>
             </a>
             <ul class="app-submenu">
-                <li><button type="button" class="app-submenu-link" data-bs-toggle="modal" data-bs-target="#modal-prog-ajouter"><i class="bi bi-plus-lg me-2"></i>Créer</button></li>
-                <li><button type="button" class="app-submenu-link" data-bs-toggle="modal" data-bs-target="#modal-prog-consulter"><i class="bi bi-eye me-2"></i>Consulter</button></li>
+                <li><a href="{{ route('programmes.index') }}" class="app-submenu-link"><i class="bi bi-calendar-plus me-2"></i>Créer & consulter</a></li>
 
                 <li class="nav-submenu">
                     <a href="#" class="app-submenu-title">
@@ -57,12 +54,9 @@
                         <i class="bi bi-chevron-right ms-auto small"></i>
                     </a>
                     <ul class="app-submenu">
-                        <li><button type="button" class="app-submenu-link" data-bs-toggle="modal" data-bs-target="#modal-seance-ajouter"><i class="bi bi-plus-lg me-2"></i>Planifier</button></li>
-                        <li><button type="button" class="app-submenu-link" data-bs-toggle="modal" data-bs-target="#modal-seance-consulter"><i class="bi bi-eye me-2"></i>Consulter</button></li>
+                        <li><a href="{{ route('seances.index') }}" class="app-submenu-link"><i class="bi bi-calendar-event me-2"></i>Planifier & consulter</a></li>
                     </ul>
                 </li>
-
-                <li><button type="button" class="app-submenu-link" data-bs-toggle="modal" data-bs-target="#modal-prog-valider"><i class="bi bi-clipboard2-check me-2"></i>Validation</button></li>
             </ul>
         </li>
 
@@ -74,9 +68,8 @@
                 <i class="bi bi-chevron-right ms-auto small"></i>
             </a>
             <ul class="app-submenu">
-                <li><button type="button" class="app-submenu-link" data-bs-toggle="modal" data-bs-target="#modal-presence-saisie"><i class="bi bi-keyboard me-2"></i>Par code</button></li>
-                <li><button type="button" class="app-submenu-link" data-bs-toggle="modal" data-bs-target="#modal-presence-saisie"><i class="bi bi-qr-code-scan me-2"></i>Scanner</button></li>
-                <li><button type="button" class="app-submenu-link" data-bs-toggle="modal" data-bs-target="#modal-presence-stats"><i class="bi bi-bar-chart-line me-2"></i>Statistiques</button></li>
+                <li><a href="{{ route('presences.index') }}" class="app-submenu-link"><i class="bi bi-qr-code-scan me-2"></i>Enregistrer (code / QR)</a></li>
+                <li><a href="{{ route('presences.index') }}" class="app-submenu-link"><i class="bi bi-bar-chart-line me-2"></i>Statistiques</a></li>
             </ul>
         </li>
 
@@ -88,17 +81,26 @@
                 <i class="bi bi-chevron-right ms-auto small"></i>
             </a>
             <ul class="app-submenu">
-                <li><button type="button" class="app-submenu-link" data-bs-toggle="modal" data-bs-target="#modal-eval-cotation"><i class="bi bi-pencil-square me-2"></i>Coter les NU</button></li>
+                <li><a href="{{ route('evaluations.index') }}" class="app-submenu-link"><i class="bi bi-pencil-square me-2"></i>Coter les NU</a></li>
             </ul>
+        </li>
+
+        <!-- Rapport -->
+        <li class="nav-item">
+            <a href="{{ route('rapport.index') }}" class="nav-link d-flex align-items-center {{ request()->routeIs('rapport.index') ? 'active bg-primary text-white' : 'text-white-50' }}">
+                <i class="bi bi-file-earmark-text me-2"></i>
+                <span>Rapport</span>
+                <i class="bi bi-file-earmark-text ms-auto small opacity-50"></i>
+            </a>
         </li>
 
         <!-- Réglages (CRUD des paramètres) -->
         <li class="nav-item">
-            <button type="button" class="nav-link d-flex align-items-center w-100 text-white-50" data-bs-toggle="modal" data-bs-target="#modal-parametres">
+            <a href="{{ route('parametres.index') }}" class="nav-link d-flex align-items-center text-white-50">
                 <i class="bi bi-sliders2 me-2"></i>
                 <span>Réglages</span>
                 <i class="bi bi-gear-wide-connected ms-auto small opacity-50"></i>
-            </button>
+            </a>
         </li>
     </ul>
     </div><!-- /.offcanvas-body -->

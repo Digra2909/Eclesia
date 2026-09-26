@@ -25,7 +25,6 @@ class StoreFideleRequest extends FormRequest
             'telephone' => ['nullable', 'string', 'max:13'],
             'grace' => ['nullable', 'string'],
             'genre' => ['required', 'in:M,F'],
-            'path_qr_code' => ['required', 'string'],
             'statut_id' => ['nullable', 'exists:statut_fideles,id'],
         ];
     }
@@ -45,7 +44,6 @@ class StoreFideleRequest extends FormRequest
             'telephone.max' => 'Le téléphone ne doit pas dépasser 13 caractères.',
             'genre.required' => 'Le genre est obligatoire.',
             'genre.in' => 'Le genre doit être M ou F.',
-            'path_qr_code.required' => 'Le QR code est obligatoire.',
             'statut_id.exists' => 'Le statut choisi n\'existe pas.',
         ];
     }

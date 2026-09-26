@@ -14,8 +14,6 @@ class StorePresenceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Le code_fidele est la voie prioritaire : c'est lui qui identifie
-            // le fidèle. Le scanner QR renvoie le même code_fidele (voie 2).
             'code_fidele' => ['required', 'string', 'max:255'],
             'seance_id' => ['nullable', 'exists:seances,id'],
             'est_present' => ['nullable', 'boolean'],

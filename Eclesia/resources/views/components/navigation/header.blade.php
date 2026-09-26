@@ -4,10 +4,6 @@
             <button class="btn btn-link text-dark p-0 d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
                 <i class="bi bi-list fs-3"></i>
             </button>
-            <div class="input-group" style="max-width: 380px;">
-                <span class="input-group-text bg-light border-0"><i class="bi bi-search text-muted"></i></span>
-                <input type="text" class="form-control bg-light border-0 shadow-none" placeholder="Rechercher...">
-            </div>
         </div>
 
         <div class="d-flex align-items-center gap-3">
@@ -24,7 +20,7 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
                     <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i> Profil</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i> Paramètres</a></li>
+                    <li><a class="dropdown-item" href="{{ route('parametres.index') }}"><i class="bi bi-gear me-2"></i> Paramètres</a></li>
                     <li><hr class="dropdown-divider"></li>
                     @if(Route::has('logout'))
                         <li>

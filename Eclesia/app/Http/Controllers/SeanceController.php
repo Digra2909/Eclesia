@@ -3,19 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSeanceRequest;
-use App\Http\Requests\StoreSeancesBatchRequest;
 use App\Http\Requests\UpdateSeanceRequest;
 use App\Models\Seance;
-use Illuminate\Support\Facades\DB;
 
 class SeanceController extends Controller
 {
     /**
-     * Liste des enregistrements (JSON si appel AJAX).
+     * Page de planification et suivi des séances.
      */
     public function index()
     {
-        return response()->json(Seance::latest()->get());
+        return view('formation.pages.seances.index');
     }
 
     /**
@@ -38,29 +36,6 @@ class SeanceController extends Controller
         }
 
         return back()->with('success', 'Séance créée avec succès.');
-    }
-
-    /**
-     * Enregistre plusieurs séances d'un coup (modale d'ajout multiple).
-     */
-    public function storeBatch(StoreSeancesBatchRequest $request)
-    {
-        $programmeId = $request->validated('programme_id');
-
-        $created = DB::transaction(function () use ($request, $programmeId) {
-            return collect($request->validated('seances'))
-                ->map(fn (array $seance) => Seance::create([
-                    ...$seance,
-                    'programme_id' => $programmeId,
-                ]))
-                ->values();
-        });
-
-        if ($request->wantsJson()) {
-            return response()->json($created, 201);
-        }
-
-        return back()->with('success', $created->count().' séance(s) créée(s) avec succès.');
     }
 
     /**

@@ -11,11 +11,11 @@ use App\Models\Seance;
 class PresenceController extends Controller
 {
     /**
-     * Liste des enregistrements (JSON si appel AJAX).
+     * Page d'enregistrement et d'historique des présences.
      */
     public function index()
     {
-        return response()->json(Presence::latest()->get());
+        return view('formation.pages.presences.index');
     }
 
     /**
@@ -27,9 +27,8 @@ class PresenceController extends Controller
     }
 
     /**
-     * Enregistre une présence à partir du code du fidèle (voie prioritaire).
-     * Le scanner QR est la voie secondaire : il renvoie le même code_fidele
-     * et passe donc par cet unique point d'entrée.
+     * Enregistre une présence à partir du code du fidèle (format
+     * COMP-CNTRL-<n°> ; la vie web accepte aussi la saisie du n° seul).
      */
     public function store(StorePresenceRequest $request)
     {

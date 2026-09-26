@@ -26,7 +26,6 @@ class UpdateFideleRequest extends FormRequest
             'adresse' => ['nullable', 'string', 'max:255'],
             'grace' => ['nullable', 'string'],
             'genre' => ['required', 'in:M,F'],
-            'path_qr_code' => ['nullable', 'string'],
             'statut_id' => ['nullable', 'exists:statut_fideles,id'],
             'statut_nu' => ['nullable', 'in:en règle,non en règle'],
         ];

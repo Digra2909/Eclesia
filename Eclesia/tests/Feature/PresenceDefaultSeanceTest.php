@@ -22,7 +22,7 @@ class PresenceDefaultSeanceTest extends TestCase
             'heure_debut' => '08:00:00',
             'programme_id' => $programme->id,
         ]);
-        $fidele = Fidele::create(['code_fidele' => 'CODE-JOUR-1', 'nom' => 'Doe', 'postnom' => 'X', 'prenom' => 'Jane', 'genre' => 'F', 'path_qr_code' => 'qr-1.png']);
+        $fidele = Fidele::create(['code_fidele' => 'CODE-JOUR-1', 'nom' => 'Doe', 'postnom' => 'X', 'prenom' => 'Jane', 'genre' => 'F']);
 
         $reponse = $this->postJson(route('presences.store'), [
             'code_fidele' => $fidele->code_fidele,
@@ -46,7 +46,7 @@ class PresenceDefaultSeanceTest extends TestCase
             'heure_debut' => '08:00:00',
             'programme_id' => $programme->id,
         ]);
-        $fidele = Fidele::create(['code_fidele' => 'CODE-JOUR-2', 'nom' => 'Doe', 'postnom' => 'X', 'prenom' => 'John', 'genre' => 'M', 'path_qr_code' => 'qr-2.png']);
+        $fidele = Fidele::create(['code_fidele' => 'CODE-JOUR-2', 'nom' => 'Doe', 'postnom' => 'X', 'prenom' => 'John', 'genre' => 'M']);
 
         $this->postJson(route('presences.store'), ['code_fidele' => $fidele->code_fidele])->assertStatus(201);
         $this->assertEquals(1, Presence::count());
@@ -67,7 +67,7 @@ class PresenceDefaultSeanceTest extends TestCase
 
     public function test_erreur_lorsqu_aucune_seance_na_lieu_aujourdhui(): void
     {
-        $fidele = Fidele::create(['code_fidele' => 'CODE-JOUR-3', 'nom' => 'Doe', 'postnom' => 'X', 'prenom' => 'Sam', 'genre' => 'M', 'path_qr_code' => 'qr-3.png']);
+        $fidele = Fidele::create(['code_fidele' => 'CODE-JOUR-3', 'nom' => 'Doe', 'postnom' => 'X', 'prenom' => 'Sam', 'genre' => 'M']);
 
         $this->postJson(route('presences.store'), ['code_fidele' => $fidele->code_fidele])
             ->assertStatus(422)
