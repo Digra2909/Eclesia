@@ -40,7 +40,7 @@
                         @endif
                         {{ $title }}
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    <button onclick="location.reload()" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                 </div>
             @endif
 

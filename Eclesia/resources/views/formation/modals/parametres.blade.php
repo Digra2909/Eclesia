@@ -7,7 +7,7 @@
                 <x-slot:header>
                     <div class="d-flex justify-content-between align-items-center">
                         <h6 class="fw-semibold mb-0"><i class="bi bi-person-check me-1 text-primary"></i>Statuts des fidèles</h6>
-                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modal-crud-statut"><i class="bi bi-plus-lg"></i></button>
+                        <button type="button" class="btn btn-sm btn-primary" data-crud-reset data-crud-form="#form-crud-statut" data-bs-toggle="modal" data-bs-target="#modal-crud-statut"><i class="bi bi-plus-lg"></i></button>
                     </div>
                 </x-slot:header>
                 <ul class="list-group list-group-flush">
@@ -21,11 +21,13 @@
                                         data-fields='{"designation": "{{ $designation }}"}'>
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <form action="{{ route('statut-fideles.destroy', ['statut_fidele' => $id]) }}" method="POST" onsubmit="return confirm('Supprimer ce statut ?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                                </form>
+                                <button type="button" class="btn btn-sm btn-outline-danger" title="Supprimer"
+                                        data-bs-toggle="modal" data-bs-target="#modal-crud-supprimer"
+                                        data-bs-modal-fill
+                                        data-action="{{ route('statut-fideles.destroy', ['statut_fidele' => $id]) }}"
+                                        data-label="{{ $designation }}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
                             </span>
                         </li>
                     @empty
@@ -41,7 +43,7 @@
                 <x-slot:header>
                     <div class="d-flex justify-content-between align-items-center">
                         <h6 class="fw-semibold mb-0"><i class="bi bi-chat-left-dots me-1 text-primary"></i>Types d'intervention</h6>
-                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modal-crud-type"><i class="bi bi-plus-lg"></i></button>
+                        <button type="button" class="btn btn-sm btn-primary" data-crud-reset data-crud-form="#form-crud-type" data-bs-toggle="modal" data-bs-target="#modal-crud-type"><i class="bi bi-plus-lg"></i></button>
                     </div>
                 </x-slot:header>
                 <ul class="list-group list-group-flush">
@@ -55,11 +57,13 @@
                                         data-fields='{"designation": "{{ $designation }}"}'>
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <form action="{{ route('type-interventions.destroy', ['type_intervention' => $id]) }}" method="POST" onsubmit="return confirm('Supprimer ce type ?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                                </form>
+                                <button type="button" class="btn btn-sm btn-outline-danger" title="Supprimer"
+                                        data-bs-toggle="modal" data-bs-target="#modal-crud-supprimer"
+                                        data-bs-modal-fill
+                                        data-action="{{ route('type-interventions.destroy', ['type_intervention' => $id]) }}"
+                                        data-label="{{ $designation }}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
                             </span>
                         </li>
                     @empty
@@ -75,7 +79,7 @@
                 <x-slot:header>
                     <div class="d-flex justify-content-between align-items-center">
                         <h6 class="fw-semibold mb-0"><i class="bi bi-book me-1 text-primary"></i>Cours</h6>
-                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modal-crud-cours"><i class="bi bi-plus-lg"></i></button>
+                        <button type="button" class="btn btn-sm btn-primary" data-crud-reset data-crud-form="#form-crud-cours" data-bs-toggle="modal" data-bs-target="#modal-crud-cours"><i class="bi bi-plus-lg"></i></button>
                     </div>
                 </x-slot:header>
                 <ul class="list-group list-group-flush">
@@ -89,11 +93,13 @@
                                         data-fields='{"passages": "{{ $coursItem['passages'] }}"}'>
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <form action="{{ route('cours.destroy', ['cour' => $coursItem['id']]) }}" method="POST" onsubmit="return confirm('Supprimer ce cours ?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                                </form>
+                                <button type="button" class="btn btn-sm btn-outline-danger" title="Supprimer"
+                                        data-bs-toggle="modal" data-bs-target="#modal-crud-supprimer"
+                                        data-bs-modal-fill
+                                        data-action="{{ route('cours.destroy', ['cour' => $coursItem['id']]) }}"
+                                        data-label="{{ $coursItem['passages'] }}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
                             </span>
                         </li>
                     @empty
@@ -109,7 +115,7 @@
                 <x-slot:header>
                     <div class="d-flex justify-content-between align-items-center">
                         <h6 class="fw-semibold mb-0"><i class="bi bi-briefcase me-1 text-primary"></i>Postes</h6>
-                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modal-crud-poste"><i class="bi bi-plus-lg"></i></button>
+                        <button type="button" class="btn btn-sm btn-primary" data-crud-reset data-crud-form="#form-crud-poste" data-bs-toggle="modal" data-bs-target="#modal-crud-poste"><i class="bi bi-plus-lg"></i></button>
                     </div>
                 </x-slot:header>
                 <ul class="list-group list-group-flush">
@@ -123,11 +129,13 @@
                                         data-fields='{"designation": "{{ $designation }}"}'>
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <form action="{{ route('postes.destroy', ['poste' => $id]) }}" method="POST" onsubmit="return confirm('Supprimer ce poste ?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                                </form>
+                                <button type="button" class="btn btn-sm btn-outline-danger" title="Supprimer"
+                                        data-bs-toggle="modal" data-bs-target="#modal-crud-supprimer"
+                                        data-bs-modal-fill
+                                        data-action="{{ route('postes.destroy', ['poste' => $id]) }}"
+                                        data-label="{{ $designation }}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
                             </span>
                         </li>
                     @empty
@@ -165,7 +173,7 @@
         <div class="col-12">
             <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-chat-left-dots"></i></span>
-                <input type="text" name="designation" class="form-control" placeholder="Désignation *" required>
+                <input type="text" name="designation" class="form-control" placeholder="Désignation *" >
             </div>
         </div>
     </form>
@@ -204,5 +212,16 @@
     <x-slot:footer>
         <button type="button" class="btn btn-light" data-bs-dismiss="modal" data-crud-reset data-crud-form="#form-crud-poste">Annuler</button>
         <button type="submit" form="form-crud-poste" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Enregistrer</button>
+    </x-slot:footer>
+</x-ui.modal>
+
+{{-- Confirmation de suppression partagée (tout paramètre) --}}
+<x-ui.modal id="modal-crud-supprimer" title="Confirmer la suppression" size="sm">
+    <p class="mb-0">
+        Voulez-vous vraiment supprimer <strong data-field="label"></strong> ?
+    </p>
+    <x-slot:footer>
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-danger" data-confirm-submit><i class="bi bi-trash me-1"></i>Supprimer</button>
     </x-slot:footer>
 </x-ui.modal>

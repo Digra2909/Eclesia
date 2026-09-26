@@ -179,7 +179,9 @@
     @endphp
     <script type="application/json" id="dashboard-data">@json($dashboardData)</script>
 
-    @if (session('seances_pour_programme'))
+    @if (session('cours_pour_programme'))
+        <input type="hidden" id="dashboard-cours-programme" value="{{ session('cours_pour_programme') }}">
+    @elseif (session('seances_pour_programme'))
         <input type="hidden" id="dashboard-seances-programme" value="{{ session('seances_pour_programme') }}">
     @endif
 

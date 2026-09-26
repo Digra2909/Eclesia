@@ -35,6 +35,7 @@ Route::resource('interventions', InterventionController::class)->only(['index', 
 Route::resource('seances', SeanceController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
 Route::post('/seances/batch', [SeanceController::class, 'storeBatch'])->name('seances.batch');
 Route::resource('programmes', ProgrammeController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
+Route::post('/programmes/{programme}/cours', [ProgrammeController::class, 'storeCours'])->name('programmes.cours');
 Route::resource('cours', CoursController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
 Route::resource('formation-nus', FormationNuController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
 Route::resource('formation-ords', FormationOrdController::class)->only(['index', 'store', 'show', 'update', 'destroy']);

@@ -12,67 +12,76 @@
             </div>
         @endif
 
-        <div class="col-12">
+        <div class="col-12 mb-1">
+            <label class="form-label small text-muted mb-1 fw-medium">Programme concerné</label>
             <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-mortarboard"></i></span>
                 <select class="form-select" name="programme_id" id="seances-programme" required>
-                    <option value="" selected disabled>Programme *</option>
+                    <option value="" selected disabled>Sélectionnez le programme *</option>
                     @foreach ($programmes as $programme)
-                        <option value="{{ $programme['id'] }}">{{ $programme['libelle'] }}</option>
+                        <option value="{{ $programme['id'] }}" data-max-numero="{{ $programme['max_numero_seance'] ?? 0 }}">{{ $programme['libelle'] }}</option>
                     @endforeach
                 </select>
             </div>
+            <div class="form-text"><i class="bi bi-info-circle me-1"></i>Les numéros de séances s'incrémentent automatiquement</div>
         </div>
 
         {{-- Bloc modèle (cloné à chaque clic sur "+") --}}
         <div class="col-12 seance-row" data-seance-row>
-            <div class="card border-0 shadow-sm">
-                <div class="card-header py-2 bg-white d-flex justify-content-between align-items-center">
-                    <span class="small text-muted" data-seance-num>Séance 1</span>
-                    <button type="button" class="btn btn-sm btn-outline-danger" data-seance-retirer title="Retirer"><i class="bi bi-x-lg"></i></button>
+            <div class="border rounded-3 p-3 bg-white shadow-sm">
+                <div class="d-flex justify-content-between align-items-center gap-2 mb-3 pb-2 border-bottom">
+                    <span class="fw-semibold text-primary"><i class="bi bi-clock-history me-1"></i>Séance <span data-seance-num>1</span></span>
+                    <button type="button" class="btn btn-sm btn-outline-danger" data-seance-retirer title="Retirer cette séance"><i class="bi bi-x-lg"></i></button>
                 </div>
-                <div class="card-body row g-2">
+                <div class="row g-2">
                     <div class="col-6 col-md-3">
+                        <label class="form-label small mb-1">N° séance</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-hash"></i></span>
-                            <input type="number" min="1" class="form-control" name="seances[][numero_seance]" placeholder="N° *" required>
+                            <input type="number" min="1" class="form-control" data-seance-num-input disabled aria-label="Numéro automatique">
+                            <input type="hidden" name="seances[][numero_seance]" data-seance-num-hidden>
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
+                        <label class="form-label small mb-1">Date *</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
-                            <input type="date" class="form-control" name="seances[][date_seance]" placeholder="Date *" required>
+                            <input type="date" class="form-control" name="seances[][date_seance]" required>
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
+                        <label class="form-label small mb-1">Heure de début *</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-clock"></i></span>
-                            <input type="time" class="form-control" name="seances[][heure_debut]" placeholder="Début *" required>
+                            <input type="time" class="form-control" name="seances[][heure_debut]" required>
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
+                        <label class="form-label small mb-1">Heure de fin</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-clock-history"></i></span>
-                            <input type="time" class="form-control" name="seances[][heure_fin]" placeholder="Fin">
+                            <input type="time" class="form-control" name="seances[][heure_fin]">
                         </div>
                     </div>
-                    <div class="col-6 col-md-3">
+                    <div class="col-6 col-md-6">
+                        <label class="form-label small mb-1">Lieu</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
-                            <input type="text" class="form-control" name="seances[][lieu]" placeholder="Lieu (défaut : temple de l'église)">
+                            <input type="text" class="form-control" name="seances[][lieu]" placeholder="Défaut : temple de l'église">
                         </div>
                     </div>
-                    <div class="col-6 col-md-3">
+                    <div class="col-6 col-md-6">
+                        <label class="form-label small mb-1">Délai de rappel (jours)</label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-hourglass-split"></i></span>
-                            <input type="number" min="0" class="form-control" name="seances[][delai_rappel]" placeholder="Délai de rappel (jours)">
+                            <span class="input-group-text"><i class="bi bi-bell"></i></span>
+                            <input type="number" min="0" class="form-control" name="seances[][delai_rappel]" placeholder="Ex. 2">
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="seances-conteneur"></div>
+        <div id="seances-conteneur" class="col-12"></div>
 
         <div class="col-12">
             <button type="button" class="btn btn-outline-primary w-100" id="seances-add"><i class="bi bi-plus-lg me-1"></i>Ajouter une autre séance</button>

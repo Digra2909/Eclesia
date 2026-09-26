@@ -29,37 +29,45 @@
         <div class="col-md-6">
             <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-person"></i></span>
-                <input type="text" class="form-control" name="nom" placeholder="Nom *" required>
+                <input type="text" class="form-control" name="nom" placeholder="Nom *"  autocomplete='off'>
             </div>
         </div>
         <div class="col-md-6">
             <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
-                <input type="text" class="form-control" name="postnom" placeholder="Post-nom *" required>
+                <input type="text" class="form-control" name="postnom" placeholder="Post-nom "  autocomplete='off'>
             </div>
         </div>
         <div class="col-md-6">
             <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-person-vcard"></i></span>
-                <input type="text" class="form-control" name="prenom" placeholder="Prénom *" required>
+                <input type="text" class="form-control" name="prenom" placeholder="Prénom *" autocomplete='off'>
             </div>
         </div>
         <div class="col-md-6">
             <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
-                <input type="date" class="form-control" name="date_naissance" placeholder="Date de naissance">
+                <input type="date" class="form-control" name="date_naissance" placeholder="Date de naissance" autocomplete='off'>
             </div>
         </div>
         <div class="col-md-6">
             <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                <input type="tel" class="form-control" name="telephone" maxlength="13" placeholder="Téléphone (WhatsApp)">
+                <span class="input-group-text border-start-0">+243</span>
+                <input type="tel" class="form-control" name="telephone" maxlength="9" inputmode="numeric"
+                       pattern="[0-9]{9}" placeholder="Ex: 820701979" autocomplete='off'>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                <input type="text" class="form-control" name="adresse" placeholder="Adresse" autocomplete='off'>
             </div>
         </div>
         <div class="col-md-6">
             <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-gender-ambiguous"></i></span>
-                <select class="form-select" name="genre" required>
+                <select class="form-select" name="genre" >
                     <option value="" selected disabled>Genre *</option>
                     @foreach ($genreVariants as $value => $label)
                         <option value="{{ $value }}">{{ $label }}</option>
@@ -72,16 +80,13 @@
                 <span class="input-group-text"><i class="bi bi-check2-circle"></i></span>
                 <select class="form-select" name="statut_nu" required>
                     <option value="" selected disabled>Statut NU *</option>
-                    <option>en règle</option>
+                    <option selected >en règle</option>
                     <option>non en règle</option>
                 </select>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-stars"></i></span>
-                <input type="text" class="form-control" name="grace" placeholder="Grâce (service, don)">
-            </div>
+        <div class="col-12">
+            <div id="unites-ajouter-feedback" class="small d-none"></div>
         </div>
     </form>
     <x-slot:footer>
@@ -117,30 +122,40 @@
                  data-filtre-unit
                  data-nom="{{ $unite['nom'] }}"
                  data-statut="{{ $unite['statut_nu'] }}">
-                <div class="card card-consulter h-100">
+                <div class="card card-consulter h-100 p-2">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <span class="fw-semibold">{{ $unite['code_fidele'] ?? $unite['nom'] }}</span>
                         <x-ui.badge :variant="$statutVariants[$unite['statut_nu']] ?? 'secondary'">{{ $unite['statut_nu'] }}</x-ui.badge>
                     </div>
                     <div class="card-body">
                         <h6 class="fw-semibold mb-1">{{ $unite['nom'] }}</h6>
-                        <p class="text-muted small mb-1"><i class="bi bi-telephone me-1"></i>{{ $unite['telephone'] ?? '—' }}</p>
-                        <p class="text-muted small mb-0">
-                            <i class="bi {{ $unite['genre'] === 'F' ? 'bi-gender-female' : 'bi-gender-male' }} me-1"></i>{{ $genreVariants[$unite['genre']] ?? $unite['genre'] }}
-                            @if (! empty($unite['grace']))
-                                <span class="ms-2"><i class="bi bi-stars me-1"></i>{{ $unite['grace'] }}</span>
+                        @if (! empty($unite['code_nu']))
+                            <p class="text-muted small mb-1"><i class="bi bi-credit-card me-1"></i>{{ $unite['code_nu'] }}</p>
+                        @endif
+                        <p class="text-muted small mb-1">
+                            <i class="bi bi-{{ $unite['genre'] === 'F' ? 'gender-female' : 'gender-male' }} me-1"></i>{{ $genreVariants[$unite['genre']] ?? $unite['genre'] }}
+                            @if (! empty($unite['date_naissance']))
+                                <span class="ms-2"><i class="bi bi-calendar3 me-1"></i>{{ $unite['date_naissance'] }}</span>
                             @endif
                         </p>
+                        <p class="text-muted small mb-1"><i class="bi bi-telephone me-1"></i>{{ $unite['telephone'] ?? '—' }}</p>
+                        <p class="text-muted small mb-0"><i class="bi bi-geo-alt me-1"></i>{{ $unite['adresse'] ?? '—' }}</p>
+                        @if (! empty($unite['grace']))
+                            <p class="text-muted small mb-0 mt-1"><i class="bi bi-stars me-1"></i>{{ $unite['grace'] }}</p>
+                        @endif
                     </div>
                     <div class="card-footer bg-white d-flex justify-content-end gap-2">
                         <button type="button" class="btn btn-sm btn-light" title="Éditer"
                                 data-bs-toggle="modal" data-bs-target="#modal-unites-editer"
                                 data-bs-modal-fill
                                 data-action="{{ route('fideles.update', ['fidele' => $unite['id']]) }}"
-                                data-nom="{{ $unite['nom'] }}"
-                                data-code="{{ $unite['code_fidele'] ?? '' }}"
+                                data-nom="{{ $unite['surname'] }}"
+                                data-prenom="{{ $unite['prenom'] }}"
+                                data-postnom="{{ $unite['postnom'] }}"
+                                data-code_fidele="{{ $unite['code_fidele'] ?? '' }}"
                                 data-genre="{{ $unite['genre'] }}"
                                 data-telephone="{{ $unite['telephone'] ?? '' }}"
+                                data-adresse="{{ $unite['adresse'] ?? '' }}"
                                 data-statut_nu="{{ $unite['statut_nu'] }}">
                             <i class="bi bi-pencil"></i>
                         </button>
@@ -171,28 +186,41 @@
 
 {{-- ============ ÉDITER une nouvelle unité ============ --}}
 <x-ui.modal id="modal-unites-editer" title="Éditer l'unité" size="lg">
-    <form class="row g-3">
+    <form id="form-unites-editer" class="row g-3" method="POST">
         @csrf
-        <input type="hidden" name="code">
+        @method('PUT')
+        <input type="hidden" name="code_fidele">
         <div class="col-md-6">
             <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-person"></i></span>
-                <input type="text" class="form-control" name="nom" placeholder="Nom *" required>
+                <input type="text" class="form-control" name="nom" placeholder="Nom *" >
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person-vcard"></i></span>
+                <input type="text" class="form-control" name="prenom" placeholder="Prénom *" >
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                <input type="text" class="form-control" name="postnom" placeholder="Post-nom" >
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-gender-ambiguous"></i></span>
+                <select class="form-select" name="genre" >
+                    <option selected>M</option>
+                    <option>F</option>
+                </select>
             </div>
         </div>
         <div class="col-md-6">
             <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-telephone"></i></span>
                 <input type="tel" class="form-control" name="telephone" placeholder="Téléphone (WhatsApp)">
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-gender-ambiguous"></i></span>
-                <select class="form-select" name="genre">
-                    <option>M</option>
-                    <option>F</option>
-                </select>
             </div>
         </div>
         <div class="col-md-6">
@@ -204,10 +232,16 @@
                 </select>
             </div>
         </div>
+        <div class="col-12">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                <input type="text" class="form-control" name="adresse" placeholder="Adresse">
+            </div>
+        </div>
     </form>
     <x-slot:footer>
         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
-        <button type="button" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Enregistrer</button>
+        <button type="submit" form="form-unites-editer" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Enregistrer</button>
     </x-slot:footer>
 </x-ui.modal>
 

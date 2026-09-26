@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['code_fidele', 'nom', 'postnom', 'prenom', 'date_naissance', 'telephone', 'grace', 'genre', 'path_qr_code', 'statut_id'])]
+#[Fillable(['code_fidele', 'nom', 'postnom', 'prenom', 'date_naissance', 'telephone', 'adresse', 'grace', 'genre', 'path_qr_code', 'statut_id'])]
 #[Hidden(['id'])]
 class Fidele extends Model
 {

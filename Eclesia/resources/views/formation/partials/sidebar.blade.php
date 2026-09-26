@@ -38,18 +38,6 @@
             </ul>
         </li>
 
-        <!-- Cours -->
-        <li class="nav-submenu">
-            <a href="#" class="nav-link d-flex align-items-center text-white-50">
-                <i class="bi bi-journal-richtext me-2"></i>
-                <span>Cours</span>
-                <i class="bi bi-chevron-right ms-auto small"></i>
-            </a>
-            <ul class="app-submenu">
-                <li><button type="button" class="app-submenu-link" data-bs-toggle="modal" data-bs-target="#modal-cours-ajouter"><i class="bi bi-plus-lg me-2"></i>Ajouter</button></li>
-                <li><button type="button" class="app-submenu-link" data-bs-toggle="modal" data-bs-target="#modal-cours-consulter"><i class="bi bi-eye me-2"></i>Consulter</button></li>
-            </ul>
-        </li>
 
         <!-- Programmes (avec sous-menu Séances et Validation) -->
         <li class="nav-submenu">

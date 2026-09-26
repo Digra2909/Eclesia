@@ -47,25 +47,6 @@
                 <input type="text" class="form-control" name="theme" placeholder="Thème (programme Ord) *">
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-cash-coin"></i></span>
-                <input type="number" min="0" class="form-control" name="montant" placeholder="Montant (FCFA)">
-                <span class="input-group-text">FCFA</span>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-flag"></i></span>
-                <select class="form-select" name="statut">
-                    <option value="créé" selected>créé</option>
-                    <option value="programmé">programmé</option>
-                    <option value="validé">validé</option>
-                    <option value="en cours">en cours</option>
-                    <option value="cloturé">cloturé</option>
-                </select>
-            </div>
-        </div>
         <div class="col-12">
             <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-chat-left-text"></i></span>
@@ -88,24 +69,13 @@
                 <input type="text" class="form-control" placeholder="Filtrer par intitulé..." aria-label="Filtrer les programmes" id="filtre-prog-intitule">
             </div>
         </div>
-        <div class="col-6 col-md-4">
+        <div class="col-6 col-md-7">
             <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-diagram-3 text-muted"></i></span>
                 <select id="filtre-prog-type" class="form-select" aria-label="Filtrer par type">
                     <option value="">Tous les types</option>
                     <option value="NU">NU</option>
                     <option value="Ord">Ord</option>
-                </select>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-funnel text-muted"></i></span>
-                <select id="filtre-prog-statut" class="form-select" aria-label="Filtrer par statut">
-                    <option value="">Tous les statuts</option>
-                    @foreach ($statutVariantsProg as $statut => $variant)
-                        <option>{{ $statut }}</option>
-                    @endforeach
                 </select>
             </div>
         </div>
@@ -116,12 +86,10 @@
             <div class="col-12 col-sm-6 col-lg-4"
                  data-filtre-prog
                  data-intitule="{{ $programme['libelle'] }}"
-                 data-type="{{ $programme['type'] ?? '' }}"
-                 data-statut="{{ $programme['statut'] }}">
+                 data-type="{{ $programme['type'] ?? '' }}">
                 <div class="card card-consulter h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <x-ui.badge :variant="$typeVariantsProg[$programme['type']] ?? 'secondary'">{{ $programme['type'] ?? '—' }}</x-ui.badge>
-                        <x-ui.badge :variant="$statutVariantsProg[$programme['statut']] ?? 'secondary'">{{ $programme['statut'] }}</x-ui.badge>
                     </div>
                     <div class="card-body">
                         <h6 class="fw-semibold mb-1">{{ $programme['libelle'] }}</h6>
@@ -129,7 +97,6 @@
                             <i class="bi bi-collection me-1"></i>{{ $programme['nb_seances'] }} séance(s) ·
                             <i class="bi bi-book me-1"></i>{{ $programme['nb_cours'] }} cours
                         </p>
-                        <p class="text-muted small mb-0"><i class="bi bi-cash-coin me-1"></i>{{ number_format((int) $programme['montant'], 0, ',', ' ') }} FCFA</p>
                         @if (! empty($programme['commentaire']))
                             <p class="text-muted small mt-1 mb-0"><i class="bi bi-chat-left-text me-1"></i>{{ $programme['commentaire'] }}</p>
                         @endif
@@ -140,8 +107,6 @@
                                 data-bs-modal-fill
                                 data-action="{{ route('programmes.update', ['programme' => $programme['id']]) }}"
                                 data-libelle="{{ $programme['libelle'] }}"
-                                data-montant="{{ $programme['montant'] }}"
-                                data-statut="{{ $programme['statut'] }}"
                                 data-commentaire="{{ $programme['commentaire'] }}">
                             <i class="bi bi-pencil"></i>
                         </button>
@@ -186,30 +151,13 @@
 
 {{-- ============ ÉDITER un programme ============ --}}
 <x-ui.modal id="modal-prog-editer" title="Éditer le programme" size="lg">
-    <form class="row g-3">
+    <form class="row g-3" id="form-prog-editer" method="POST">
         @csrf
         @method('PUT')
         <div class="col-12">
             <div class="alert alert-light border small mb-0">
                 <i class="bi bi-mortarboard me-1 text-primary"></i>
                 <span data-field="libelle"><em>Programme</em></span>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-cash-coin"></i></span>
-                <input type="number" min="0" class="form-control" name="montant" placeholder="Montant (FCFA)">
-                <span class="input-group-text">FCFA</span>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-flag"></i></span>
-                <select class="form-select" name="statut">
-                    @foreach ($statutVariantsProg as $statut => $variant)
-                        <option>{{ $statut }}</option>
-                    @endforeach
-                </select>
             </div>
         </div>
         <div class="col-12">
@@ -221,7 +169,7 @@
     </form>
     <x-slot:footer>
         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
-        <button type="button" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Enregistrer</button>
+        <button type="submit" form="form-prog-editer" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Enregistrer</button>
     </x-slot:footer>
 </x-ui.modal>
 
@@ -255,7 +203,6 @@
                 <div class="card card-consulter h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <x-ui.badge :variant="$typeVariantsProg[$programme['type']] ?? 'secondary'">{{ $programme['type'] ?? '—' }}</x-ui.badge>
-                        <x-ui.badge :variant="$statutVariantsProg[$programme['statut']] ?? 'secondary'">{{ $programme['statut'] }}</x-ui.badge>
                     </div>
                     <div class="card-body d-flex flex-column">
                         <h6 class="fw-semibold mb-1">{{ $programme['libelle'] }}</h6>
@@ -266,7 +213,6 @@
                         </div>
 
                         <div class="small">
-                            <p class="mb-1"><i class="bi bi-cash-coin me-1 text-success"></i>{{ number_format((int) $programme['montant'], 0, ',', ' ') }} FCFA</p>
                             @if (! empty($programme['cours_list']) && $programme['cours_list']->count() > 0)
                                 <p class="mb-1"><i class="bi bi-journal-bookmark me-1 text-primary"></i>Cours : {{ $programme['cours_list']->implode(', ') }}</p>
                             @endif

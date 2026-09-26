@@ -6,6 +6,7 @@ use App\Http\Requests\StoreSeanceRequest;
 use App\Http\Requests\StoreSeancesBatchRequest;
 use App\Http\Requests\UpdateSeanceRequest;
 use App\Models\Seance;
+use Illuminate\Support\Facades\DB;
 
 class SeanceController extends Controller
 {
@@ -44,9 +45,16 @@ class SeanceController extends Controller
      */
     public function storeBatch(StoreSeancesBatchRequest $request)
     {
-        $created = collect($request->validated('seances'))
-            ->map(fn (array $seance) => Seance::create($seance))
-            ->values();
+        $programmeId = $request->validated('programme_id');
+
+        $created = DB::transaction(function () use ($request, $programmeId) {
+            return collect($request->validated('seances'))
+                ->map(fn (array $seance) => Seance::create([
+                    ...$seance,
+                    'programme_id' => $programmeId,
+                ]))
+                ->values();
+        });
 
         if ($request->wantsJson()) {
             return response()->json($created, 201);

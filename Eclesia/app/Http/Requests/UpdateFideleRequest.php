@@ -23,10 +23,12 @@ class UpdateFideleRequest extends FormRequest
             'prenom' => ['required', 'string', 'max:20'],
             'date_naissance' => ['nullable', 'date'],
             'telephone' => ['nullable', 'string', 'max:13'],
+            'adresse' => ['nullable', 'string', 'max:255'],
             'grace' => ['nullable', 'string'],
             'genre' => ['required', 'in:M,F'],
-            'path_qr_code' => ['required', 'string'],
+            'path_qr_code' => ['nullable', 'string'],
             'statut_id' => ['nullable', 'exists:statut_fideles,id'],
+            'statut_nu' => ['nullable', 'in:en règle,non en règle'],
         ];
     }
 
@@ -43,9 +45,10 @@ class UpdateFideleRequest extends FormRequest
             'prenom.required' => 'Le prénom est obligatoire.',
             'prenom.max' => 'Le prénom ne doit pas dépasser 20 caractères.',
             'telephone.max' => 'Le téléphone ne doit pas dépasser 13 caractères.',
+            'adresse.max' => 'L\'adresse ne doit pas dépasser 255 caractères.',
             'genre.required' => 'Le genre est obligatoire.',
             'genre.in' => 'Le genre doit être M ou F.',
-            'path_qr_code.required' => 'Le QR code est obligatoire.',
+            'statut_nu.in' => 'Le statut NU doit être "en règle" ou "non en règle".',
             'statut_id.exists' => 'Le statut choisi n\'existe pas.',
         ];
     }

@@ -111,18 +111,47 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // ===== Ajout de plusieurs séances (clonage de lignes) =====
+    // ===== Ajout de plusieurs séances (clonage de lignes + numéros auto) =====
     const conteneurSeances = document.getElementById('seances-conteneur');
     const modeleSeance = document.querySelector('[data-seance-row]');
+    const selectSeancesProgramme = document.getElementById('seances-programme');
 
     if (conteneurSeances && modeleSeance) {
+        function numeroDeBase() {
+            const option = selectSeancesProgramme?.selectedOptions?.[0];
+            const max = option ? parseInt(option.dataset.maxNumero, 10) : 0;
+            return Number.isFinite(max) ? max : 0;
+        }
+
         function mettreAJourNumeros() {
-            document.querySelectorAll('[data-seance-row]').forEach((ligne, index) => {
-                const num = ligne.querySelector('[data-seance-num]');
-                if (num) {
-                    num.textContent = `Séance ${index + 1}`;
+            const base = numeroDeBase();
+            document.querySelectorAll('.seance-row').forEach((ligne, index) => {
+                const numero = base + index + 1;
+                const libelle = ligne.querySelector('[data-seance-num]');
+                if (libelle) {
+                    libelle.textContent = numero;
+                }
+                const entree = ligne.querySelector('[data-seance-num-input]');
+                if (entree) {
+                    entree.value = numero;
+                }
+                const cache = ligne.querySelector('[data-seance-num-hidden]');
+                if (cache) {
+                    cache.value = numero;
                 }
             });
+        }
+
+        selectSeancesProgramme?.addEventListener('change', mettreAJourNumeros);
+
+        function attacherRetirer(ligne) {
+            const retirer = ligne.querySelector('[data-seance-retirer]');
+            if (retirer) {
+                retirer.addEventListener('click', function () {
+                    ligne.remove();
+                    mettreAJourNumeros();
+                });
+            }
         }
 
         document.getElementById('seances-add')?.addEventListener('click', function () {
@@ -131,23 +160,12 @@ document.addEventListener('DOMContentLoaded', function () {
             clone.classList.add('seance-row');
             clone.querySelectorAll('input').forEach((input) => (input.value = ''));
             conteneurSeances.appendChild(clone);
-            const retirer = clone.querySelector('[data-seance-retirer]');
-            if (retirer) {
-                retirer.addEventListener('click', () => {
-                    clone.remove();
-                    mettreAJourNumeros();
-                });
-            }
+            attacherRetirer(clone);
             mettreAJourNumeros();
         });
 
-        const premierRetirer = modeleSeance.querySelector('[data-seance-retirer]');
-        if (premierRetirer) {
-            premierRetirer.addEventListener('click', () => {
-                modeleSeance.remove();
-                mettreAJourNumeros();
-            });
-        }
+        attacherRetirer(modeleSeance);
+        mettreAJourNumeros();
     }
 
     // ===== Modales CRUD des paramètres (statuts, types, cours, postes) =====
@@ -177,6 +195,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // "Nouveau" : retour au mode création.
             form.action = form.dataset.actionStore;
             form.querySelector('input[name="_method"]')?.remove();
+            form.querySelectorAll('input[type="text"], textarea').forEach((champ) => (champ.value = ''));
         }
     }
 
@@ -226,12 +245,88 @@ document.addEventListener('DOMContentLoaded', function () {
         verifierValidation();
     });
 
-    // ===== Après création d'un programme : ouverture directe des séances =====
+    // ===== Après création d'un programme : cours d'abord, puis séances =====
+    const coursPourProgramme = document.getElementById('dashboard-cours-programme');
+    if (coursPourProgramme && coursPourProgramme.value) {
+        const programmeId = coursPourProgramme.value;
+        const urlBase = document.getElementById('cours-programme-url')?.value ?? '';
+        const actionCible = urlBase.replace('__PROG__', programmeId);
+        const formCours = document.getElementById('form-cours-programme');
+        const formRapide = document.getElementById('form-cours-rapide');
+
+        if (formCours) {
+            formCours.action = actionCible;
+        }
+        if (formRapide) {
+            formRapide.action = actionCible;
+        }
+
+        // Ajout rapide : crée le cours ET l'attache au programme (AJAX).
+        const boutonRapide = document.getElementById('cours-rapide-submit');
+        boutonRapide?.addEventListener('click', async function () {
+            const champPassages = document.getElementById('cours-rapide-passages');
+            const passages = champPassages?.value.trim();
+            const feedback = document.getElementById('cours-rapide-feedback');
+            if (!formRapide || !passages) {
+                if (feedback) {
+                    feedback.textContent = 'Indiquez le thème ou les versets du cours.';
+                    feedback.className = 'text-danger small';
+                }
+                return;
+            }
+            const donnees = new URLSearchParams(new FormData(formRapide));
+            donnees.set('nouveau_passages', passages);
+            try {
+                const reponse = await fetch(formRapide.action, {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json' },
+                    body: donnees,
+                });
+                const resultat = await reponse.json().catch(() => ({}));
+                if (reponse.ok) {
+                    champPassages.value = '';
+                    if (feedback) {
+                        feedback.textContent = 'Cours ajouté et associé au programme.';
+                        feedback.className = 'text-success small';
+                    }
+                    const liste = document.getElementById('cours-programme-liste');
+                    const template = document.getElementById('cours-programme-template');
+                    if (liste && template) {
+                        const nouvelle = template.content.cloneNode(true);
+                        const caseACocher = nouvelle.querySelector('input[type="checkbox"]');
+                        if (caseACocher && resultat.cours?.id) {
+                            caseACocher.value = resultat.cours.id;
+                            caseACocher.checked = true;
+                        }
+                        const label = nouvelle.querySelector('label');
+                        const texte = label?.querySelector('.cours-passages');
+                        if (texte) {
+                            texte.textContent = resultat.cours?.passages ?? passages;
+                        }
+                        liste.appendChild(nouvelle);
+                    }
+                } else {
+                    if (feedback) {
+                        feedback.textContent = resultat.message ?? 'Erreur lors de l\'ajout du cours.';
+                        feedback.className = 'text-danger small';
+                    }
+                }
+            } catch (erreur) {
+                if (feedback) {
+                    feedback.textContent = 'Erreur de connexion lors de l\'ajout du cours.';
+                    feedback.className = 'text-danger small';
+                }
+            }
+        });
+    }
+
+    // ===== Après l'ajout des cours : ouverture directe des séances =====
     const seancesPourProgramme = document.getElementById('dashboard-seances-programme');
     if (seancesPourProgramme && seancesPourProgramme.value) {
         const selectProgramme = document.getElementById('seances-programme');
         if (selectProgramme) {
             selectProgramme.value = seancesPourProgramme.value;
+            selectProgramme.dispatchEvent(new Event('change'));
         }
         const modalSeances = document.getElementById('modal-seance-ajouter');
         if (modalSeances) {
@@ -249,17 +344,15 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // ===== Filtres des programmes (consulter + valider) =====
-    ['#filtre-prog-intitule', '#filtre-prog-type', '#filtre-prog-statut'].forEach((sel) => {
+    ['#filtre-prog-intitule', '#filtre-prog-type'].forEach((sel) => {
         const champ = document.querySelector(sel);
         champ?.addEventListener(sel.includes('intitule') ? 'input' : 'change', () => {
             const terme = (document.getElementById('filtre-prog-intitule')?.value ?? '').trim().toLowerCase();
             const type = document.getElementById('filtre-prog-type')?.value ?? '';
-            const statut = document.getElementById('filtre-prog-statut')?.value ?? '';
             document.querySelectorAll('#prog-cards [data-filtre-prog]').forEach((carte) => {
                 const okTerme = !terme || (carte.dataset.intitule ?? '').toLowerCase().includes(terme);
                 const okType = !type || carte.dataset.type === type;
-                const okStatut = !statut || carte.dataset.statut === statut;
-                carte.style.display = okTerme && okType && okStatut ? '' : 'none';
+                carte.style.display = okTerme && okType ? '' : 'none';
             });
         });
     });
@@ -386,6 +479,47 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('qr-recap').classList.add('d-none');
             } else {
                 boutonEnregistrer.disabled = false;
+            }
+        });
+    }
+
+    // ===== Création d'une nouvelle unité : AJAX, on reste dans le modal =====
+    const formulaireUnitesAjouter = document.getElementById('form-unites-ajouter');
+    if (formulaireUnitesAjouter) {
+        const feedback = document.getElementById('unites-ajouter-feedback');
+        formulaireUnitesAjouter.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const bouton = this.querySelector('button[type="submit"]');
+            if (bouton) {
+                bouton.disabled = true;
+            }
+            feedback.classList.remove('d-none', 'alert-success', 'alert-danger');
+            feedback.classList.add('alert', 'small');
+            feedback.textContent = 'Enregistrement en cours…';
+            try {
+                const reponse = await fetch(this.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+                        'Accept': 'application/json',
+                    },
+                    body: new FormData(this),
+                });
+                const data = await reponse.json();
+                feedback.classList.toggle('alert-success', reponse.ok);
+                feedback.classList.toggle('alert-danger', !reponse.ok);
+                feedback.textContent = data.message
+                    ?? (reponse.ok ? 'Nouvelle unité enregistrée.' : 'Erreur lors de l\'enregistrement.');
+                if (reponse.ok) {
+                    this.reset();
+                }
+            } catch (e) {
+                feedback.classList.add('alert-danger');
+                feedback.textContent = 'Erreur réseau. Réessayez.';
+            } finally {
+                if (bouton) {
+                    bouton.disabled = false;
+                }
             }
         });
     }

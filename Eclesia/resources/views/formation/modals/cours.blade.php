@@ -85,7 +85,7 @@
 
 {{-- ============ ÉDITER un cours ============ --}}
 <x-ui.modal id="modal-cours-editer" title="Éditer le cours" size="md">
-    <form class="row g-3">
+    <form class="row g-3" id="form-cours-editer" method="POST">
         @csrf
         @method('PUT')
         <div class="col-12">
@@ -97,7 +97,7 @@
     </form>
     <x-slot:footer>
         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
-        <button type="button" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Enregistrer</button>
+        <button type="submit" form="form-cours-editer" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Enregistrer</button>
     </x-slot:footer>
 </x-ui.modal>
 
@@ -109,5 +109,60 @@
     <x-slot:footer>
         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
         <button type="button" class="btn btn-danger" data-confirm-submit><i class="bi bi-trash me-1"></i>Supprimer</button>
+    </x-slot:footer>
+</x-ui.modal>
+
+{{-- ============ ASSOCIER des cours à un programme (étape avant les séances) ============ --}}
+<x-ui.modal id="modal-cours-selection" title="Associer les cours du programme" size="lg">
+    <input type="hidden" id="cours-programme-url" value="{{ route('programmes.cours', ['programme' => '__PROG__']) }}">
+
+    @if ($errors->any())
+        <div class="alert alert-danger py-2 small mb-3">
+            @foreach ($errors->all() as $error)
+                <div><i class="bi bi-exclamation-circle me-1"></i>{{ $error }}</div>
+            @endforeach
+        </div>
+    @endif
+
+    <form id="form-cours-programme" method="POST">
+        @csrf
+        <div class="alert alert-primary small py-2 d-flex align-items-center mb-3">
+            <i class="bi bi-info-circle me-2"></i>Cochez les cours de ce programme (ou ajoutez-en un), puis passez aux séances.
+        </div>
+
+        <div class="list-group mb-3" id="cours-programme-liste">
+            @forelse ($cours as $coursItem)
+                <label class="list-group-item d-flex align-items-center gap-3 mb-1 border rounded-3">
+                    <input class="form-check-input m-0" type="checkbox" name="cours_ids[]" value="{{ $coursItem['id'] }}">
+                    <span class="cours-passages"><i class="bi bi-book me-1 text-primary"></i>{{ $coursItem['passages'] }}</span>
+                </label>
+            @empty
+                <div class="text-muted small">Aucun cours existant : ajoutez-en un ci-dessous.</div>
+            @endforelse
+        </div>
+    </form>
+
+    <template id="cours-programme-template">
+        <label class="list-group-item d-flex align-items-center gap-3 mb-1 border rounded-3">
+            <input class="form-check-input m-0" type="checkbox" name="cours_ids[]">
+            <span class="cours-passages"></span>
+        </label>
+    </template>
+
+    <form id="form-cours-rapide" method="POST" class="d-flex gap-2">
+        @csrf
+        <input type="text" class="form-control" id="cours-rapide-passages" placeholder="Nouveau thème / versets..."
+               maxlength="150" aria-label="Nouveau cours à créer et associer">
+        <button type="button" class="btn btn-outline-primary text-nowrap" id="cours-rapide-submit">
+            <i class="bi bi-plus-lg me-1"></i>Ajouter & associer
+        </button>
+    </form>
+    <div id="cours-rapide-feedback" class="small mt-1"></div>
+
+    <x-slot:footer>
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+        <button type="submit" form="form-cours-programme" class="btn btn-primary">
+            <i class="bi bi-arrow-right-circle me-1"></i>Passer aux séances
+        </button>
     </x-slot:footer>
 </x-ui.modal>

@@ -63,7 +63,22 @@ class FideleController extends Controller
      */
     public function update(UpdateFideleRequest $request, Fidele $fidele)
     {
-        $fidele->update($request->validated());
+        $data = $request->validated();
+
+        // Normalisation du téléphone : 9 chiffres saisis → préfixe +243.
+        if ($data['telephone'] && ! str_starts_with($data['telephone'], '+')) {
+            $data['telephone'] = '+243'.ltrim($data['telephone'], '0');
+        }
+
+        // Le statut NU est rattaché à la table `nus`, pas `fideles`.
+        $statutNu = $data['statut_nu'] ?? null;
+        unset($data['statut_nu']);
+
+        $fidele->update($data);
+
+        if ($statutNu && $fidele->nu) {
+            $fidele->nu->update(['statut' => $statutNu]);
+        }
 
         if ($request->wantsJson()) {
             return response()->json($fidele);

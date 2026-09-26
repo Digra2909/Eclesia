@@ -85,10 +85,16 @@ class DashboardController extends Controller
             'id' => $fidele->id,
             'code_fidele' => $fidele->code_fidele,
             'nom' => trim(implode(' ', array_filter([$fidele->prenom, $fidele->nom, $fidele->postnom]))),
+            'surname' => $fidele->nom,
+            'prenom' => $fidele->prenom,
+            'postnom' => $fidele->postnom,
             'genre' => $fidele->genre,
             'telephone' => $fidele->telephone,
+            'adresse' => $fidele->adresse,
+            'date_naissance' => $fidele->date_naissance?->format('d/m/Y'),
             'grace' => $fidele->grace,
             'statut_nu' => $fidele->nu?->statut ?? 'en règle',
+            'code_nu' => $fidele->nu?->code_nu,
         ])->values();
 
         // Cours : passages (thème / versets).
@@ -111,6 +117,7 @@ class DashboardController extends Controller
                     'statut' => $programme->statut,
                     'commentaire' => $programme->commentaire,
                     'nb_seances' => $programme->seances->count(),
+                    'max_numero_seance' => (int) max(0, $programme->seances->max('numero_seance')),
                     'nb_cours' => $programme->cours->count(),
                     'date_creation' => $programme->created_at?->format('d/m/Y'),
                     'cours_list' => $programme->cours->pluck('passages')->values(),
@@ -152,25 +159,42 @@ class DashboardController extends Controller
         // Ouvriers (KPI « Fidèles ouvriers ») : code, fidèle associé et poste.
         $ouvriers = Ouvrier::with(['fidele', 'poste'])->latest()->get()->map(fn (Ouvrier $ouvrier) => [
             'id' => $ouvrier->id,
+            'fidele_id' => $ouvrier->fidele_id,
             'code_ouvrier' => $ouvrier->code_ouvrier,
             'nom' => trim(implode(' ', array_filter([
                 $ouvrier->fidele?->prenom,
                 $ouvrier->fidele?->nom,
                 $ouvrier->fidele?->postnom,
             ]))),
+            'surname' => $ouvrier->fidele?->nom,
+            'prenom' => $ouvrier->fidele?->prenom,
+            'postnom' => $ouvrier->fidele?->postnom,
             'code_fidele' => $ouvrier->fidele?->code_fidele ?? '—',
+            'genre' => $ouvrier->fidele?->genre,
+            'telephone' => $ouvrier->fidele?->telephone,
+            'adresse' => $ouvrier->fidele?->adresse,
+            'statut_nu' => $ouvrier->fidele?->nu?->statut ?? 'en règle',
             'poste' => $ouvrier->poste?->designation ?? '—',
         ])->values();
 
         // Évaluation : cotations des NU.
         $nusEvaluation = Nu::with('fidele')->get()->map(fn (Nu $nu) => [
             'id' => $nu->id,
+            'fidele_id' => $nu->fidele_id,
             'code_nu' => $nu->code_nu,
             'fidele' => trim(implode(' ', array_filter([
                 $nu->fidele?->prenom,
                 $nu->fidele?->nom,
                 $nu->fidele?->postnom,
             ]))),
+            'surname' => $nu->fidele?->nom,
+            'prenom' => $nu->fidele?->prenom,
+            'postnom' => $nu->fidele?->postnom,
+            'code_fidele' => $nu->fidele?->code_fidele,
+            'genre' => $nu->fidele?->genre,
+            'telephone' => $nu->fidele?->telephone,
+            'adresse' => $nu->fidele?->adresse,
+            'statut_nu' => $nu->statut,
             'note_oral' => $nu->note_oral,
             'note_ecrite' => $nu->note_ecrite,
             'pourcentage' => $nu->pourcentage,

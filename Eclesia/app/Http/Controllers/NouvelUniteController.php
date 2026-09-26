@@ -19,17 +19,23 @@ class NouvelUniteController extends Controller
     public function store(StoreNouvelUniteRequest $request)
     {
         // 1. Le fidèle est créé avec un code temporaire, remplacé par le code
-        //    définitif une fois l'id connu.
+        //    définitif une fois l'id connu. Le téléphone reçoit le préfixe
+        //    +243 (le formulaire ne saisit que les 9 chiffres).
+        $telephone = $request->validated('telephone')
+            ? '+243'.ltrim($request->validated('telephone'), '0')
+            : null;
+
         $fidele = Fidele::create([
             'code_fidele' => 'X-'.Str::random(12),
             'nom' => $request->validated('nom'),
             'postnom' => $request->validated('postnom'),
             'prenom' => $request->validated('prenom'),
             'date_naissance' => $request->validated('date_naissance'),
-            'telephone' => $request->validated('telephone'),
+            'telephone' => $telephone,
+            'adresse' => $request->validated('adresse'),
             'grace' => $request->validated('grace'),
             'genre' => $request->validated('genre'),
-            'path_qr_code' => '',
+            // 'path_qr_code' => '',
             'statut_id' => $this->statutFidelePour($request->validated('statut_nu')),
         ]);
 
@@ -38,7 +44,7 @@ class NouvelUniteController extends Controller
         $codeNu = $this->generationCodeNu($fidele->id);
 
         $fidele->code_fidele = $codeFidele;
-        $fidele->path_qr_code = $this->generationCodeQR($codeFidele);
+        // $fidele->path_qr_code = $this->generationCodeQR($codeFidele);
         $fidele->save();
 
         // 3. Création de la NU associée.
@@ -49,11 +55,17 @@ class NouvelUniteController extends Controller
         ]);
 
         // 4. Envoi du QR code et du code en clair par WhatsApp.
-        $this->envoiCodeQr($fidele->telephone, $codeFidele, $codeNu);
+        // $this->envoiCodeQr($fidele->telephone, $codeFidele, $codeNu);
+
+        $message = "Nouvelle unité créée : {$codeFidele} / {$codeNu}.";
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => $message], 201);
+        }
 
         return redirect()
             ->route('dashboard')
-            ->with('success', "Nouvelle unité créée : {$codeFidele} / {$codeNu}.");
+            ->with('success', $message);
     }
 
     /**
